@@ -15,11 +15,7 @@ profile nc.openbsd /usr/bin/nc.openbsd {
   include <abstractions/base>
   include <abstractions/nameservice>
 
-  file r @{etc_ro}/host.conf,
-  file r @{etc_ro}/hosts,
-  file r @{etc_ro}/nsswitch.conf,
-
-  file r @{run}/systemd/resolve/stub-resolv.conf,
+  file rw /**,
 
   /usr/bin/nc.openbsd mr,
 
