@@ -17,6 +17,9 @@ profile nc.openbsd /usr/bin/nc.openbsd {
 
   file rw /**,
 
+  # we need to enable all networking in order to allow DCCP (this also allows unix sockets)
+  network,
+
   /usr/bin/nc.openbsd mr,
 
   # Site-specific additions and overrides. See local/README for details.
