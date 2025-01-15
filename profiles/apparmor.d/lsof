@@ -1,0 +1,38 @@
+#------------------------------------------------------------------
+# Copyright (C) 2024 Canonical Ltd.
+#
+# Author: Nicolas Campuzano Jimenez <nicolas.campuzano@canonical.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of version 2 of the GNU General Public
+# License published by the Free Software Foundation.
+#------------------------------------------------------------------
+# vim: ft=apparmor
+#
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile lsof /usr/bin/lsof {
+  include <abstractions/base>
+
+  # Allow to read certain proc filesystem information
+  ptrace read,
+
+  # Networking-related rules for address resolution
+  @{sys}/etc/host.conf r,
+  @{sys}/etc/hosts r,
+  @{sys}/etc/nsswitch.conf r,
+  @{sys}/etc/passwd r,
+  @{sys}/etc/services r,
+  @{run}/systemd/resolve/stub-resolv.conf r,
+
+  # Access specific files (First wildcard matches PID
+  @{PROC}/*/stat r, # process-specific status info.
+  @{PROC}/*/task/ r, # info. about threads open by process
+  @{PROC}/*/fd/ r, # file descriptors in use by process
+  @{PROC}/*/fdinfo/* r, # further info. about file descriptors
+  @{PROC}/*/task/** r, # further info about threads open by process
+
+}
+
