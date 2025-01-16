@@ -1,5 +1,5 @@
 #------------------------------------------------------------------
-# Copyright (C) 2024 Canonical Ltd.
+# Copyright (C) 2025 Canonical Ltd.
 #
 # Author: Nicolas Campuzano Jimenez <nicolas.campuzano@canonical.com>
 #
@@ -15,24 +15,16 @@ include <tunables/global>
 
 profile lsof /usr/bin/lsof {
   include <abstractions/base>
+  include <abstractions/nameservice-strict>
 
-  # Allow to read certain proc filesystem information
   ptrace read,
 
-  # Networking-related rules for address resolution
-  @{sys}/etc/host.conf r,
-  @{sys}/etc/hosts r,
-  @{sys}/etc/nsswitch.conf r,
-  @{sys}/etc/passwd r,
-  @{sys}/etc/services r,
-  @{run}/systemd/resolve/stub-resolv.conf r,
+  @{PROC}/@{pid}/stat r,
+  @{PROC}/@{pid}/task/ r,
+  @{PROC}/@{pid}/fd/ r,
+  @{PROC}/@{pid}/fdinfo/* r,
+  @{PROC}/@{pid}/task/** r,
 
-  # Access specific files (First wildcard matches PID
-  @{PROC}/*/stat r, # process-specific status info.
-  @{PROC}/*/task/ r, # info. about threads open by process
-  @{PROC}/*/fd/ r, # file descriptors in use by process
-  @{PROC}/*/fdinfo/* r, # further info. about file descriptors
-  @{PROC}/*/task/** r, # further info about threads open by process
-
+  include if exists <local/lsof>
 }
 
