@@ -23,7 +23,10 @@ profile lsof /usr/bin/lsof {
   @{PROC}/@{pid}/task/ r,
   @{PROC}/@{pid}/fd/ r,
   @{PROC}/@{pid}/fdinfo/* r,
-  @{PROC}/@{pid}/task/** r,
+
+  @{PROC}/@{pid}/task/@{pid}/stat r,
+  @{PROC}/@{pid}/task/@{pid}/fd r,
+  @{PROC}/@{pid}/task/@{pid}/fdinfo/* r,
 
   include if exists <local/lsof>
 }
