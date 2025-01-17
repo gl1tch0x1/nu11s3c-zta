@@ -19,14 +19,14 @@ profile lsof /usr/bin/lsof {
 
   ptrace read,
 
-  @{PROC}/@{pid}/stat r,
-  @{PROC}/@{pid}/task/ r,
-  @{PROC}/@{pid}/fd/ r,
-  @{PROC}/@{pid}/fdinfo/* r,
+  @{PROC}/@{pids}/stat r,
+  @{PROC}/@{pids}/task/ r,
+  @{PROC}/@{pids}/fd/ r,
+  @{PROC}/@{pids}/fdinfo/* r,
 
-  @{PROC}/@{pid}/task/@{pid}/stat r,
-  @{PROC}/@{pid}/task/@{pid}/fd r,
-  @{PROC}/@{pid}/task/@{pid}/fdinfo/* r,
+  @{PROC}/@{pids}/task/@{tid}/stat r,
+  @{PROC}/@{pids}/task/@{tid}/fd r,
+  @{PROC}/@{pids}/task/@{tid}/fdinfo/* r,
 
   include if exists <local/lsof>
 }
