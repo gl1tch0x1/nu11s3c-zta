@@ -1,3 +1,8 @@
+# Last Modified: Fri Jan 17 16:48:13 2025
+abi <abi/4.0>,
+
+include <tunables/global>
+
 #------------------------------------------------------------------
 # Copyright (C) 2025 Canonical Ltd.
 #
@@ -10,24 +15,29 @@
 # vim: ft=apparmor
 #
 
-abi <abi/4.0>,
-include <tunables/global>
 
 profile lsof /usr/bin/lsof {
   include <abstractions/base>
+  include <abstractions/libvirt-qemu>
   include <abstractions/nameservice-strict>
+  include if exists <local/lsof>
+
+  capability sys_ptrace,
 
   ptrace read,
 
-  @{PROC}/@{pids}/stat r,
-  @{PROC}/@{pids}/task/ r,
+  /dev/mqueue/ r,
+  @{PROC} r,
   @{PROC}/@{pids}/fd/ r,
   @{PROC}/@{pids}/fdinfo/* r,
-
-  @{PROC}/@{pids}/task/@{tid}/stat r,
-  @{PROC}/@{pids}/task/@{tid}/fd r,
+  @{PROC}/@{pids}/lock r,
+  @{PROC}/@{pids}/mounts r,
+  @{PROC}/@{pids}/stat r,
+  @{PROC}/@{pids}/task/ r,
+  @{PROC}/@{pids}/task/@{tid}/fd/ r,
   @{PROC}/@{pids}/task/@{tid}/fdinfo/* r,
+  @{PROC}/@{pids}/task/@{tid}/maps r,
+  @{PROC}/@{pids}/task/@{tid}/stat r,
+  @{PROC}/locks r,
 
-  include if exists <local/lsof>
 }
-
