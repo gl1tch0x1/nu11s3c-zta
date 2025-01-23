@@ -1,4 +1,4 @@
-# Last Modified: Fri Jan 17 20:12:40 2025
+# Last Modified: Mon Jan 20 20:17:22 2025
 abi <abi/4.0>,
 
 include <tunables/global>
@@ -15,15 +15,16 @@ include <tunables/global>
 # vim: ft=apparmor
 #
 
-
 profile lsof /usr/bin/lsof {
   include <abstractions/base>
   include <abstractions/nameservice-strict>
 
   capability sys_ptrace,
+
   ptrace read,
 
   @{PROC} r,
+  @{PROC}/locks r,
   @{PROC}/@{pids}/fd/ r,
   @{PROC}/@{pids}/fdinfo/* r,
   @{PROC}/@{pids}/lock r,
@@ -36,5 +37,8 @@ profile lsof /usr/bin/lsof {
   @{PROC}/@{pids}/task/@{tid}/stat r,
   @{PROC}/locks r,
 
+  owner @{PROC}/@{pid}/net/* r,
+ 
   include if exists <local/lsof>
 }
+
