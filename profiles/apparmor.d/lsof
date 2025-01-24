@@ -24,6 +24,8 @@ profile lsof /usr/bin/lsof flags=(attach_disconnected.path=/aa_disconnected/) {
 
   mqueue getattr type=posix,
 
+  / r,
+
   @{PROC} r,
   @{PROC}/locks r,
   @{PROC}/@{pids}/fd/ r,
