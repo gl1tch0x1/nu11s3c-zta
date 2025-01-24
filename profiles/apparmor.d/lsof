@@ -15,13 +15,14 @@ include <tunables/global>
 # vim: ft=apparmor
 #
 
-profile lsof /usr/bin/lsof {
+profile lsof /usr/bin/lsof flags=(attach_disconnected.path=/aa_disconnected/) {
   include <abstractions/base>
   include <abstractions/nameservice-strict>
 
   capability sys_ptrace,
-
   ptrace read,
+
+  mqueue getattr type=posix,
 
   @{PROC} r,
   @{PROC}/locks r,
@@ -35,9 +36,8 @@ profile lsof /usr/bin/lsof {
   @{PROC}/@{pids}/task/@{tid}/fdinfo/* r,
   @{PROC}/@{pids}/task/@{tid}/maps r,
   @{PROC}/@{pids}/task/@{tid}/stat r,
-  @{PROC}/locks r,
 
-  owner @{PROC}/@{pid}/net/* r,
+  @{PROC}/@{pid}/net/* r,
  
   include if exists <local/lsof>
 }
