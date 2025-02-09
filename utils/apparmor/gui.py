@@ -2,18 +2,18 @@ import os
 import tkinter as tk
 import tkinter.ttk as ttk
 import subprocess
-
-try:  # We use tk without themes as a fallback which makes the GUI uglier but functional.
-    import ttkthemes
-except ImportError:
-    ttkthemes = None
-
-
 import apparmor.aa as aa
 
 from apparmor.translations import init_translation
 
 _ = init_translation()
+
+try:  # We use tk without themes as a fallback which makes the GUI uglier but functional.
+    import ttkthemes
+except ImportError:
+    print(_("ttkthemes not found. Install for best user experience."))
+    ttkthemes = None
+
 
 notification_custom_msg = {
     'userns': _('Application {0} wants to create an user namespace which could be used to compromise your system\nDo you want to allow it next time {0} is run?')
