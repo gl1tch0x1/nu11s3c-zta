@@ -10,7 +10,7 @@
 abi <abi/4.0>,
 
 include <tunables/global>
-/usr/bin/dnstracer {
+profile dnstracer /usr/bin/dnstracer {
   include <abstractions/base>
   include <abstractions/nameservice-strict>
 
