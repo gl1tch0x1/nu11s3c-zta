@@ -26,22 +26,22 @@ profile lsof /usr/bin/lsof flags=(attach_disconnected.path=/aa_disconnected/) {
 
   / r,
 
-  /** r,
-  #the permissions below are now redundant
-  #@{PROC} r,
-  #@{PROC}/locks r,
-  #@{PROC}/@{pids}/fd/ r,
-  #@{PROC}/@{pids}/fdinfo/* r,
-  #@{PROC}/@{pids}/lock r,
-  #@{PROC}/@{pids}/mounts r,
-  #@{PROC}/@{pids}/stat r,
-  #@{PROC}/@{pids}/task/ r,
-  #@{PROC}/@{pids}/task/@{tid}/fd/ r,
-  #@{PROC}/@{pids}/task/@{tid}/fdinfo/* r,
-  #@{PROC}/@{pids}/task/@{tid}/maps r,
-  #@{PROC}/@{pids}/task/@{tid}/stat r,
+  /**/ r,
 
-  #@{PROC}/@{pid}/net/* r,
+  @{PROC} r,
+  @{PROC}/locks r,
+  @{PROC}/@{pids}/fd/ r,
+  @{PROC}/@{pids}/fdinfo/* r,
+  @{PROC}/@{pids}/lock r,
+  @{PROC}/@{pids}/mounts r,
+  @{PROC}/@{pids}/stat r,
+  @{PROC}/@{pids}/task/ r,
+  @{PROC}/@{pids}/task/@{tid}/fd/ r,
+  @{PROC}/@{pids}/task/@{tid}/fdinfo/* r,
+  @{PROC}/@{pids}/task/@{tid}/maps r,
+  @{PROC}/@{pids}/task/@{tid}/stat r,
+
+  @{PROC}/@{pid}/net/* r,
 
   include if exists <local/lsof>
 }
