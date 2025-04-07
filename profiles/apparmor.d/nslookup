@@ -1,0 +1,34 @@
+# -*- mode: apparmor; -*-
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2025 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim: ft=apparmor
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+profile nslookup /usr/bin/nslookup {
+  include <abstractions/base>
+
+  # needed for network queries
+  network inet dgram,
+  network inet6 dgram,
+  network inet stream,
+  network inet6 stream,
+
+  # needed for terminal descriptors when `nslookup` is called without args
+  /usr/share/terminfo/** r,
+  /usr/bin/nslookup mr,
+
+  # `nslookup` performs reads to its own thread often, needed for expected functionality
+  owner @{PROC}/@{pids}/task/@{tid}/comm r,
+
+}
+
