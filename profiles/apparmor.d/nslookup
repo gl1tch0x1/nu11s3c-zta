@@ -16,6 +16,7 @@ include <tunables/global>
 
 profile nslookup /usr/bin/nslookup {
   include <abstractions/base>
+  include <abstractions/terminfo>
 
   # needed for network queries
   network inet dgram,
@@ -23,12 +24,10 @@ profile nslookup /usr/bin/nslookup {
   network inet stream,
   network inet6 stream,
 
-  # needed for terminal descriptors when `nslookup` is called without args
-  /usr/share/terminfo/** r,
   /usr/bin/nslookup mr,
 
   # `nslookup` performs reads to its own thread often, needed for expected functionality
-  owner @{PROC}/@{pids}/task/@{tid}/comm r,
+  owner @{PROC}/@{pid}/task/@{tid}/comm r,
 
   include if exists <local/nslookup>
 }
