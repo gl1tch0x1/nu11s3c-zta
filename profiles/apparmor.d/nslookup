@@ -30,5 +30,6 @@ profile nslookup /usr/bin/nslookup {
   # `nslookup` performs reads to its own thread often, needed for expected functionality
   owner @{PROC}/@{pids}/task/@{tid}/comm r,
 
+  include if exists <local/nslookup>
 }
 
