@@ -17,6 +17,7 @@ include <tunables/global>
 profile nslookup /usr/bin/nslookup {
   include <abstractions/base>
   include <abstractions/terminfo>
+  include <abstractions/nameservice-strict>
 
   # needed for network queries
   network inet dgram,
