@@ -26,10 +26,12 @@ profile nslookup /usr/bin/nslookup {
   network inet6 stream,
 
   /usr/bin/nslookup mr,
+  # read access is requested to the following locations during bare `nslookup`
+  /proc/version_signature r,
+  /sys/kernel/mm/transparent_hugepage/enabled r,
 
   # `nslookup` performs reads to its own thread often, needed for expected functionality
-  owner @{PROC}/@{pid}/task/@{tid}/comm r,
+  owner @{PROC}/@{pid}/task/@{tid}/comm rw,
 
   include if exists <local/nslookup>
 }
-
