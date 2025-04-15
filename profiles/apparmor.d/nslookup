@@ -19,6 +19,9 @@ profile nslookup /usr/bin/nslookup {
   include <abstractions/terminfo>
   include <abstractions/nameservice-strict>
 
+  # requested on < plucky, no apparent impact if excluded but included as a sanity case
+  capability sys_admin,
+
   # needed for network queries
   network inet dgram,
   network inet6 dgram,
