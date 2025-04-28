@@ -28,7 +28,8 @@ profile netstat /{usr/,}bin/netstat {
 
   ptrace (read),
 
-  /{usr/,}bin/netstat rmix,
+  @{exec_path} mr,
+
   /etc/networks r,
   @{PROC} r,
   @{PROC}/@{pids}/cmdline r,

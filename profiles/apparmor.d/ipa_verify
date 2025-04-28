@@ -3,6 +3,9 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{arg1}=/**/*.so
+profile ipa_verify /usr/bin/ipa_verify flags=(unconfined) {
+  userns,
+  @{exec_path} mr,
 
 profile ipa_verify /usr/bin/ipa_verify {
     include <abstractions/base>
