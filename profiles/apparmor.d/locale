@@ -20,7 +20,7 @@ profile locale /usr/bin/locale {
 
   file r /usr/share/i18n/charmaps/,
   file r /usr/share/i18n/charmaps/*,
-  file r /usr/bin/locale,
+  file mr /usr/bin/locale,
 
   file Cxrm @{compressors} -> compressor,
 
