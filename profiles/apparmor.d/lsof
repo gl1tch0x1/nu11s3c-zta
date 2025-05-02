@@ -22,6 +22,8 @@ profile lsof /usr/bin/lsof flags=(attach_disconnected.path=/aa_disconnected/) {
   /usr/bin/lsof mr,
 
   capability sys_ptrace,
+  capability dac_read_search,
+  capability dac_override,
   ptrace read,
 
   mqueue getattr type=posix,
