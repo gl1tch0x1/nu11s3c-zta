@@ -19,6 +19,8 @@ profile lsof /usr/bin/lsof flags=(attach_disconnected.path=/aa_disconnected/) {
   include <abstractions/base>
   include <abstractions/nameservice>
 
+  /usr/bin/lsof mr,
+
   capability sys_ptrace,
   ptrace read,
 
