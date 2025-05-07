@@ -46,7 +46,7 @@ execute: |
   rm /tmp/deleted-file
 
   # See if lsof still detects it
-  sudo lsof | grep "(deleted)"
+  sudo lsof | grep -F "/tmp/deleted-file (deleted)"
 
   # Cleanup
   kill $TAIL_PID
@@ -177,7 +177,7 @@ execute: |
   # Try open file from mounted share
   echo "test content" | sudo tee /srv/samba/share/testfile.txt
   sudo sync  # sync samba to update testfile.txt
-  # Open shared file for reading ans assign fd 3. Opoen for r/w can be tricky in smb, this does the trick.
+  # Open shared file for reading and assign fd 3. Open for r/w can be tricky in smb, this does the trick.
   exec 3</mnt/smb/testfile.txt
   sleep 2
   #lsof on open share
