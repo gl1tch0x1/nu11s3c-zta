@@ -28,18 +28,6 @@
 typedef int (*comparison_fn_t)(const void *, const void *);
 typedef void (*__free_fn_t)(void *);
 
-enum var_type {
-	sd_boolean,
-	sd_set,
-};
-
-struct symtab {
-	char *var_name;
-	enum var_type type;
-	int boolean;
-	struct set_value *values;
-	struct set_value *expanded;
-};
 
 static void *my_symtab = NULL;
 
@@ -209,12 +197,32 @@ out:
 	return rc;
 }
 
+
+int insert_set_var(struct symtab *var)
+{
+	struct symtab **result;
+
+	result = (struct symtab **) tsearch(var, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	if (!result) {
+		PERROR("Failed to allocate memory: %s\n", strerror(errno));
+		return errno;
+	}
+
+	if (*result != var) {
+		/* already existing variable */
+		PERROR("'%s' is already defined\n", var->var_name);
+		return 1;
+	}
+
+	return 0;
+}
+
 /* new_set_var
  * creates copies of arguments, so caller can free them after use
  */
 int new_set_var(const char *var, const char *value)
 {
-	struct symtab *n, **result;
+	struct symtab *n;
 	int rc = 0;
 
 	n = new_symtab_entry(var);
@@ -226,21 +234,9 @@ int new_set_var(const char *var, const char *value)
 	n->type = sd_set;
 	add_to_set(&(n->values), value);
 
-	result = (struct symtab **) tsearch(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
-	if (!result) {
-		PERROR("Failed to allocate memory: %s\n", strerror(errno));
-		rc = errno;
-		goto err;
-	}
-
-	if (*result != n) {
-		/* already existing variable */
-		PERROR("'%s' is already defined\n", var);
-		rc = 1;
-		goto err;
-	}
-
-	return 0;
+	rc = insert_set_var(n);
+	if (! rc)
+		return 0;
 
 err:
 	free_symtab(n);
@@ -331,25 +327,21 @@ char *get_next_set_value(struct set_value **list)
 	return ret;
 }
 
-/* delete_symbol
- * removes an individual variable from the symbol table. We don't
- * support this in the language, but for special variables that change
- * between profiles, we need this.
- */
-int delete_set_var(const char *var_name)
+
+struct symtab *remove_set_var(const char *var_name)
 {
-	int rc = 0;
-	struct symtab **result, *n, *var;
+	struct symtab **result, *n, *var = NULL;
 
 	n = new_symtab_entry(var_name);
 	if (!n) {
-		rc = ENOMEM;
+		//rc = ENOMEM;
 		goto out;
 	}
 
 	result = (struct symtab **) tfind(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
 	if (!result) {
 		/* XXX Warning? */
+		//rc = ENOENT;
 		goto out;
 	}
 
@@ -368,11 +360,27 @@ int delete_set_var(const char *var_name)
 		exit(1);
 	}
 
-	free_symtab(var);
-
 out:
 	free_symtab(n);
-	return rc;
+
+	return var;
+}
+
+/* delete_symbol
+ * removes an individual variable from the symbol table. We don't
+ * support this in the language, but for special variables that change
+ * between profiles, we need this.
+ */
+int delete_set_var(const char *var_name)
+{
+	struct symtab *var;
+
+	var = remove_set_var(var_name);
+	if (var) {
+		free_symtab(var);
+		return 0;
+	}
+	return ENOENT;
 }
 
 static void *seenlist = NULL;

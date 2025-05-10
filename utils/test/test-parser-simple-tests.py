@@ -43,10 +43,6 @@ skip_startswith = (
     'vars/vars_auto_attach_path_bad_3.sd',
     'vars/vars_auto_exec_path_bad_5.sd',
     'vars/vars_auto_attach_path_bad_5.sd',
-
-    # profiles that define an autovar that then gets defined causing a conflict
-    'vars/vars_auto_exec_path_bad_4.sd',
-    'vars/vars_auto_attach_path_bad_4.sd',
 )
 
 # testcases that should raise an exception, but don't

@@ -464,12 +464,27 @@ struct set_value {
 	char *val;
 	struct set_value *next;
 };
+enum var_type {
+	sd_boolean,
+	sd_set,
+};
+
+struct symtab {
+	char *var_name;
+	enum var_type type;
+	int boolean;
+	struct set_value *values;
+	struct set_value *expanded;
+};
+
 extern int add_boolean_var(const char *var, int boolean);
 extern int get_boolean_var(const char *var);
 extern int new_set_var(const char *var, const char *value);
 extern int add_set_value(const char *var, const char *value);
 extern struct set_value *get_set_var(const char *var);
 extern char *get_next_set_value(struct set_value **context);
+extern int insert_set_var(struct symtab *var);
+extern struct symtab *remove_set_var(const char *var_name);
 extern int delete_set_var(const char *var_name);
 extern void dump_symtab(void);
 extern void dump_expanded_symtab(void);

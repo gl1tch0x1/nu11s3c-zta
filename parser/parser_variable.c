@@ -339,6 +339,8 @@ static std::string escape_re(std::string str)
 int process_profile_variables(Profile *prof)
 {
 	int error = 0, rc;
+	struct symtab *saved_exec_path = NULL;
+	struct symtab *saved_attach_path = NULL;
 
 	/* needs to be before PROFILE_NAME_VARIABLE so that variable will
 	 * have the correct name
@@ -362,10 +364,12 @@ int process_profile_variables(Profile *prof)
 		 * the attachment.
 		 */
 		/* need to take into account alias, but not yet */
+		saved_attach_path = remove_set_var(PROFILE_ATTACH_VAR);
 		error = new_set_var(PROFILE_ATTACH_VAR, prof->attachment);
 		if (error)
 			goto cleanup_name;
 		/* update to use kernel vars if available */
+		saved_exec_path = remove_set_var(PROFILE_EXEC_VAR);
 		error = new_set_var(PROFILE_EXEC_VAR, prof->attachment);
 		if (error)
 			goto cleanup_attach;
@@ -385,12 +389,16 @@ cleanup:
 		rc = delete_set_var(PROFILE_EXEC_VAR);
 		if (!error)
 			error = rc;
+		if (saved_exec_path)
+			insert_set_var(saved_exec_path);
 	}
 cleanup_attach:
 	if (prof->attachment) {
 		rc = delete_set_var(PROFILE_ATTACH_VAR);
 		if (!error)
 			error = rc;
+		if (saved_attach_path)
+			insert_set_var(saved_attach_path);
 	}
 cleanup_name:
 	rc = delete_set_var(PROFILE_NAME_VARIABLE);
