@@ -36,5 +36,7 @@ profile gs /usr/bin/gs {
   # allow access to local printer devices
   file rw @{print_devices},
 
+  file mr @{exec_path},
+
   include if exists <local/gs>
 }
