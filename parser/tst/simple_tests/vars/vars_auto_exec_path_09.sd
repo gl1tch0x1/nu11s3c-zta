@@ -1,0 +1,10 @@
+#=DESCRIPTION reference auto exec_path variable overrides with user defined
+#=EXRESULT PASS
+
+@{exec_path}=/path
+profile /a/test/profile {
+  /a/test/profile rix,
+
+  @{exec_path} rwk,
+
+}

@@ -24,6 +24,8 @@ profile hwctl /usr/bin/hwctl {
   network inet6 stream,
   network netlink raw,
 
+  @{exec_path} mr,
+
   /sys/firmware/dmi/tables/* r,  # for collecting SMBIOS info
   /sys/devices/system/cpu/cpufreq/policy*/cpuinfo_max_freq r,
   /sys/fs/cgroup/**/cpu.max r,
@@ -38,14 +40,14 @@ profile hwctl /usr/bin/hwctl {
   profile dpkg /usr/bin/dpkg {
     include <abstractions/base>
 
-    /usr/bin/dpkg r,
+    @{exec_path}  r,
     /etc/dpkg/**  r,
   }
 
   profile kmod /usr/bin/kmod {
     include <abstractions/base>
 
-    /usr/bin/kmod             r,
+    @{exec_path}              r,
     @{PROC}/{cmdline,modules} r,
     @{sys}/module/**          r,  # for fetching kernel modules
   }

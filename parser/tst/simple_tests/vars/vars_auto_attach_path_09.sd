@@ -1,0 +1,10 @@
+#=DESCRIPTION reference auto attach_path variable overrides with user defined
+#=EXRESULT PASS
+
+@{attach_path}=/path
+profile /a/test/profile {
+  /a/test/profile rix,
+
+  @{attach_path} rwk,
+
+}

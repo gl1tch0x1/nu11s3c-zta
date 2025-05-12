@@ -1,0 +1,16 @@
+#=DESCRIPTION user @{exec_path} available after override
+#=EXRESULT PASS
+
+@{exec_path}=/path
+profile /a/test/profile {
+  /a/test/profile rix,
+
+  @{exec_path} rwk,
+
+}
+
+profile extra {
+
+  @{exec_path} rw,
+
+}

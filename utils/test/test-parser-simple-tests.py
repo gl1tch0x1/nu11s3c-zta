@@ -35,6 +35,14 @@ skip_startswith = (
 
     # Pux and Cux (which actually mean PUx and CUx) get rejected by the tools
     'generated_x/exact-',
+
+    # profiles that use undefined autovars like @{exec_path} when no attachment
+    'vars/vars_auto_exec_path_bad_2.sd',
+    'vars/vars_auto_attach_path_bad_2.sd',
+    'vars/vars_auto_exec_path_bad_3.sd',
+    'vars/vars_auto_attach_path_bad_3.sd',
+    'vars/vars_auto_exec_path_bad_5.sd',
+    'vars/vars_auto_attach_path_bad_5.sd',
 )
 
 # testcases that should raise an exception, but don't

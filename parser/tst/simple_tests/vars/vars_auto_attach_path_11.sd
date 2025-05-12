@@ -1,0 +1,10 @@
+#=DESCRIPTION user @{attach_path} can set attachment and then auto var used
+#=EXRESULT PASS
+
+@{attach_path}=/path
+profile @{attach_path} {
+  /a/test/profile rix,
+
+  @{attach_path} rwk,
+
+}

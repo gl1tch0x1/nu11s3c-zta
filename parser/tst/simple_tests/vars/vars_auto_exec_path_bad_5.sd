@@ -1,0 +1,11 @@
+#=DESCRIPTION reference auto exec_path variable in rules w/hats
+#=EXRESULT FAIL
+
+profile idf3s2A6GX8vrk /simple/profile {
+  /test/profile rix,
+
+  ^test {
+  	/run/@{exec_path}/tmp rwk,
+  }
+}
+

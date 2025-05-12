@@ -3,13 +3,12 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{arg1}=/**/*.so
-
 profile ipa_verify /usr/bin/ipa_verify {
     include <abstractions/base>
     # Until we can replace arg1 above with real arg parsing
     include <abstractions/private-files-strict>
 
-    /usr/bin/ipa_verify r,
+    @{exec_path} mr,
     
     # Probably enumerated by libcamera initialization but not needed for this tool's functionality
     deny /sys/devices/system/node/ r,
