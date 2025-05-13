@@ -28,7 +28,8 @@ class AAShowUsageTest(AATest):
 
         expected_output_1 = \
 '''usage: aa-show-usage [-h] [-s {all,used,unused}] [-j] [-d DIR]
-                     [--filter.flags FLAGS] [--filter.profile_name PROFILE_NAME]
+                     [--show-matching-path] [--filter.flags FLAGS]
+                     [--filter.profile_name PROFILE_NAME]
                      [--filter.profile_attach PROFILE_ATTACH]
                      [--filter.profile_path PROFILE_PATH]
 
@@ -42,6 +43,7 @@ Check which profiles are used
                         Type of profiles to show
   -j, --json            Output in JSON
   -d, --dir DIR         Path to profiles
+  --show-matching-path  Show the path of a file matching the profile
 
 Filtering options:
   Filters are used to reduce the output of information to only those entries

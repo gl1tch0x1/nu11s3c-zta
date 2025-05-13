@@ -30,26 +30,35 @@ _ = init_translation()
 MAX_RECURSION = 10
 
 
-def has_matching_file(pattern):
-    for pat in expand_braces(pattern):
-        if any(glob.iglob(pat, recursive=True)):
-            return True
-    return False
+def has_matching_file(pattern, xattrs=None):
+    for p in expand_braces(pattern):
+        for path in glob.iglob(p, recursive=True):
+            if os.path.realpath(path) != os.path.abspath(path):  # remove symlinks
+                continue
+            if not xattrs or all(os.getxattr(path, name) == val for name, val in xattrs.items()):
+                return path
+    return None
 
 
-def display_profile_text(used, unused):
+def display_profile_text(used, unused, show_matching_path):
     if used:
         print(_('Used profiles:'))
-        for (name, attach, path) in used:
-            print(_('  Profile {} for {} ({})').format(name, attach, path))
+        for (name, attach, path, match) in used:
+            print(_('  Profile {} for {} ({}) {}').format(name, attach, path, ('→ ' + match) if show_matching_path else ''))
     if unused:
         print(_('Unused profiles:'))
-        for (name, attach, path) in unused:
-            print(_('  Profile {} for {} ({})').format(name, attach, path))
+        for (name, attach, path, match) in unused:
+            print(_('  Profile {} for {} ({}) ').format(name, attach, path))
 
 
 def profiles_to_json(profiles):
-    return [{'name': profile_name, 'attach': attach, 'path': path} for profile_name, attach, path in profiles]
+    result = []
+    for profile_name, attach, path, matching_path in profiles:
+        entry = {'name': profile_name, 'attach': attach, 'path': path}
+        if matching_path:
+            entry['matching_path'] = matching_path
+        result.append(entry)
+    return result
 
 
 def display_profile_json(used, unused):
@@ -90,15 +99,16 @@ def get_used_profiles(args, prof_filter):
 
         var_dict = aa.active_profiles.get_all_merged_variables(filename, aa.include_list_recursive(aa.active_profiles.files[filename], True))
         resolved = resolve_variables(a, var_dict)
-        found = False
+        matching_path = None
         for entry in resolved:
-            if has_matching_file(entry):
-                found = True
+            matching_path = has_matching_file(entry)
+            if matching_path:
+                break
 
-        if found and args.show_type != 'unused':
-            used.append((profile_name, a, filename))
-        if not found and args.show_type != 'used':
-            unused.append((profile_name, a, filename))
+        if matching_path and args.show_type != 'unused':
+            used.append((profile_name, a, filename, matching_path))
+        if not matching_path and args.show_type != 'used':
+            unused.append((profile_name, a, filename, matching_path))
 
     return used, unused
 
@@ -108,6 +118,7 @@ def main():
     parser.add_argument('-s', '--show-type', type=str, default='all', choices=['all', 'used', 'unused'], help=_('Type of profiles to show'))
     parser.add_argument('-j', '--json', action='store_true', help=_('Output in JSON'))
     parser.add_argument('-d', '--dir', type=str, help=_('Path to profiles'))
+    parser.add_argument('--show-matching-path', action='store_true', help=_('Show the path of a file matching the profile'))
     parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
 
     filter_group = parser.add_argument_group(_('Filtering options'),
@@ -137,7 +148,7 @@ def main():
     if args.json:
         display_profile_json(used, unused)
     else:
-        display_profile_text(used, unused)
+        display_profile_text(used, unused, args.show_matching_path)
 
 
 if __name__ == '__main__':

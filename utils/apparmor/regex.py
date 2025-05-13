@@ -29,10 +29,11 @@ RE_COMMA_EOL = r'\s*,' + RE_EOL  # optional whitespace, comma + RE_EOL
 RE_PROFILE_NAME = r'(?P<%s>(\S+|"[^"]+"))'  # string without spaces, or quoted string. %s is the match group name
 RE_PATH = r'/\S*|"/[^"]*"'  # filename (starting with '/') without spaces, or quoted filename.
 RE_VAR = r'@{[^}\s]+}'
+RE_DICT_ENTRY = r'\s*(?P<key>[^,\s=]+)(?:=(?P<value>[^,\s=]+))?\s*'
 RE_PROFILE_PATH = '(?P<%s>(' + RE_PATH + '))'  # quoted or unquoted filename. %s is the match group name
 RE_PROFILE_PATH_OR_VAR = '(?P<%s>(' + RE_PATH + '|' + RE_VAR + r'\S*|"' + RE_VAR + '[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
 RE_SAFE_OR_UNSAFE = '(?P<execmode>(safe|unsafe))'
-RE_XATTRS = r'(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+(=[^)=]+)?\s?)+)\)\s*)?'
+RE_XATTRS = r'(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+(=[^)=]+)?\s?)*)\)\s*)?'
 RE_FLAGS = r'(\s+(flags\s*=\s*)?\((?P<flags>[^)]+)\))?'
 
 RE_VARIABLE = re.compile(RE_VAR)
@@ -166,6 +167,10 @@ def parse_profile_start_line(line, filename):
     else:
         result['profile'] = result['namedprofile']
         result['profile_keyword'] = True
+    if 'xattrs' in result:
+        result['xattrs'] = re_parse_dict(result['xattrs'])
+    else:
+        result['xattrs'] = {}
 
     return result
 
@@ -237,6 +242,30 @@ def re_match_include(line):
         return path
 
     return None
+
+
+def re_parse_dict(raw):
+    """returns a dict where entries are comma or space separated"""
+    result = {}
+    if not raw:
+        return result
+
+    for key, value in re.findall(RE_DICT_ENTRY, raw):
+        if value == '':
+            value = None
+        result[key] = value
+
+    return result
+
+
+def re_print_dict(d):
+    parts = []
+    for k, v in sorted(d.items()):
+        if v:
+            parts.append("{}={}".format(k, v))
+        else:
+            parts.append(k)
+    return " ".join(parts)
 
 
 def strip_parenthesis(data):

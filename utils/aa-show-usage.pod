@@ -50,6 +50,10 @@ Output in JSON
 
 Path to profiles
 
+=item --show-matching-path
+
+Show the path of a file matching the profile. Only the first matching path of an executable is shown (not the whole list).
+
 =back
 
 =head1 FILTERING OPTIONS

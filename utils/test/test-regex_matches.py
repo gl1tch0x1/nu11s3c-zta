@@ -18,7 +18,7 @@ from apparmor.regex import (
     RE_PROFILE_START, parse_profile_start_line, re_match_include, RE_PROFILE_UNIX,
     RE_PROFILE_PIVOT_ROOT,
     re_match_include_parse, strip_parenthesis, strip_quotes, resolve_variables, expand_braces,
-    expand_var, expand_string)
+    expand_var, expand_string, re_print_dict, re_parse_dict)
 from common_test import AATest, setup_aa, setup_all_loops
 
 
@@ -855,6 +855,27 @@ class TestInvalidExpandString(AATest):
         with self.assertRaises(expected):
             var, seen_vars = params
             expand_string(var, var_dict, seen_vars)
+
+
+class TestRePrintDict(AATest):
+    tests = (
+        ({'a': 'b'},            'a=b'),
+        ({'a': 'b', 'bb': 'cc'}, 'a=b bb=cc'),
+        ({'z': 'c', 'y': 'b', 'x': 'a'}, 'x=a y=b z=c'),
+    )
+
+    def _run_test(self, params, expected):
+        self.assertEqual(re_print_dict(params), expected)
+
+
+class TestReParseDict(AATest):
+    tests = (
+        ('a=b', {'a': 'b'}),
+        ('  a=bbb  bb=cc', {'a': 'bbb', 'bb': 'cc'}),
+    )
+
+    def _run_test(self, params, expected):
+        self.assertEqual(re_parse_dict(params), expected)
 
 
 setup_aa(aa)
