@@ -2,18 +2,18 @@ import os
 import tkinter as tk
 import tkinter.ttk as ttk
 import subprocess
-
-try:  # We use tk without themes as a fallback which makes the GUI uglier but functional.
-    import ttkthemes
-except ImportError:
-    ttkthemes = None
-
-
 import apparmor.aa as aa
 
 from apparmor.translations import init_translation
 
 _ = init_translation()
+
+try:  # We use tk without themes as a fallback which makes the GUI uglier but functional.
+    import ttkthemes
+except ImportError:
+    print(_("ttkthemes not found. Install for best user experience."))
+    ttkthemes = None
+
 
 notification_custom_msg = {
     'userns': _('Application {0} wants to create an user namespace which could be used to compromise your system\nDo you want to allow it next time {0} is run?')
@@ -181,7 +181,7 @@ class ShowMoreGUIAggregated(GUI):
         self.btn_right = ttk.Button(self.button_frame, text=self.states[self.state]['btn_right'], width=1, command=lambda: self.change_view('btn_right'))
         self.btn_right.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        self.btn_allow_selected = ttk.Button(self.button_frame, text="Allow Selected", width=1, command=lambda: self.set_result('allow_selected'))
+        self.btn_allow_selected = ttk.Button(self.button_frame, text=_("Allow Selected"), width=1, command=lambda: self.set_result('allow_selected'))
         self.btn_allow_selected.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
         for i in range(3):
@@ -205,7 +205,7 @@ class ShowMoreGUIAggregated(GUI):
 
     def create_profile_rules_frame(self, parent, clean_rules):
         for profile_name, profile_rules in clean_rules.items():
-            label = ttk.Label(parent, text=profile_name, font=('Arial', 14, 'bold'))
+            label = ttk.Label(parent, text=profile_name, font=tk.font.BOLD)
             label.pack(anchor='w', pady=(5, 0))
             label.bind("<Button-1>", lambda event, rules=profile_rules: self.toggle_profile_rules(rules))
 
@@ -308,7 +308,7 @@ class ErrorGUI(GUI):
             self.label.configure(background=self.bg_color)
         self.label.pack()
 
-        self.button = ttk.Button(self.button_frame, text='OK', command=self.destroy)
+        self.button = ttk.Button(self.button_frame, text=_('OK'), command=self.destroy)
         self.button.pack()
 
     def destroy(self):
