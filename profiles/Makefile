@@ -32,6 +32,11 @@ PROFILES_SOURCE=./apparmor.d
 ABSTRACTIONS_SOURCE=./apparmor.d/abstractions
 EXTRAS_SOURCE=./apparmor/profiles/extras
 EXTRAS_ABSTRACTIONS_SOURCE=./apparmor/profiles/extras/abstractions
+ABSTRACTIONS=${ABSTRACTIONS_SOURCE}
+# extras abstractions might not exist
+ifneq ($(wildcard ${EXTRAS_ABSTRACTIONS_SOURCE}),)
+ABSTRACTIONS:=${ABSTRACTIONS} ${EXTRAS_ABSTRACTIONS_SOURCE}
+endif
 
 ifdef USE_SYSTEM
     PYTHONPATH=
@@ -134,19 +139,13 @@ check-parser: test-dependencies
 	done
 
 	@echo "*** Checking abstractions from ${ABSTRACTIONS_SOURCE} against apparmor_parser"
-	$(Q)for abstraction in $$(find ${ABSTRACTIONS_SOURCE} -maxdepth 1 -type f -printf '%P\n') ; do \
-		[ -n "${VERBOSE}" ] && echo "Testing ${ABSTRACTIONS_SOURCE}/$${abstraction}" ; \
-		echo "abi <abi/4.0>, include <tunables/global> profile test { include <abstractions/$${abstraction}> }" \
-		| ${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PROFILES_SOURCE} > /dev/null \
-		|| exit 1; \
-	done
-
-	@echo "*** Checking abstractions from ${EXTRAS_ABSTRACTIONS_SOURCE} against apparmor_parser"
-	$(Q)for abstraction in $$(find ${EXTRAS_ABSTRACTIONS_SOURCE} -maxdepth 1 -type f -printf '%P\n') ; do \
-		[ -n "${VERBOSE}" ] && echo "Testing ${EXTRAS_ABSTRACTIONS_SOURCE}/$${abstraction}" ; \
-		echo "abi <abi/4.0>, include <tunables/global> profile test { include <abstractions/$${abstraction}> }" \
-		| ${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PROFILES_SOURCE} -I ${EXTRAS_SOURCE} > /dev/null \
-		|| exit 1; \
+	$(Q)for abstraction_path in ${ABSTRACTIONS}; do \
+		for abstraction in $$(find $${abstraction_path} -maxdepth 1 -type f -printf '%P\n') ; do \
+			[ -n "${VERBOSE}" ] && echo "Testing $${abstraction_path}/$${abstraction}" ; \
+			echo "abi <abi/4.0>, include <tunables/global> profile test { include <abstractions/$${abstraction}> }" \
+			| ${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PROFILES_SOURCE} -I $${abstraction_path}/../ > /dev/null \
+			|| exit 1; \
+		done; \
 	done
 
 .PHONY: check-logprof
@@ -157,7 +156,7 @@ check-logprof: test-dependencies
 .PHONY: check-abstractions.d
 check-abstractions.d:
 	@echo "*** Checking if all abstractions (with a few exceptions) contain 'include if exists <abstractions/*.d>' and 'abi <abi/4.0>,'"
-	$(Q)for file in $$(find ${ABSTRACTIONS_SOURCE} ${EXTRAS_ABSTRACTIONS_SOURCE} -maxdepth 1 -type f) ; do \
+	$(Q)for file in $$(find ${ABSTRACTIONS} -maxdepth 1 -type f) ; do \
 		case "$${file}" in */ubuntu-browsers | */ubuntu-helpers) continue ;; esac ; \
 		include="include if exists <abstractions/$$(basename $${file}).d>" ; \
 		grep -q "^  $${include}\$$" $${file} || { echo "$${file} does not contain '$${include}'"; exit 1; } ; \
