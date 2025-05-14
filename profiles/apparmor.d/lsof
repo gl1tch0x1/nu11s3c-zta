@@ -28,6 +28,8 @@ profile lsof /usr/bin/lsof flags=(attach_disconnected.path=/aa_disconnected/) {
 
   mqueue getattr type=posix,
 
+  network netlink dgram,
+
   / r,
 
   /**/ r,
