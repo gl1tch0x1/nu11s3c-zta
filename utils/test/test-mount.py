@@ -20,7 +20,7 @@ from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.translations import init_translation
 
-from apparmor.rule.mount import MountRule
+from apparmor.rule.mount import MountRule, MountConditional
 
 _ = init_translation()
 
@@ -61,6 +61,20 @@ class MountTestParse(AATest):
                                                                                                                                                                                     False, False, False, '')),  # noqa: E127
         ('mount options=(runbindable, rw) -> /,',                           MountRule('mount',   MountRule.ALL,            ('=', ['runbindable', 'rw']), MountRule.ALL, '/',        False, False, False, '')),
         ('mount "" -> /,',                                                  MountRule('mount',   MountRule.ALL,            MountRule.ALL,           '',             '/',            False, False, False, '')),
+
+        ('mount options=(ro) options=(rw) fstype=ext4 -> /dest,',           MountRule('mount',   ('=', ['ext4']),          [('=', ('ro')), ('=', ('rw'))],                                              # noqa: E127
+                                                                                                                                                    MountRule.ALL, '/dest',         False, False, False, '')),  # noqa: E127
+        ('mount options=(ro) fstype=ext4 options=(rw) /src -> /dest,',      MountRule('mount',   ('=', ['ext4']),          [('=', ('ro')), ('=', ('rw'))],                                              # noqa: E127
+                                                                                                                                                    '/src',        '/dest',         False, False, False, '')),  # noqa: E127
+        ('mount options in (ro) options in (rw) fstype=ext4 -> /dest,',     MountRule('mount',   ('=', ['ext4']),          [('in', ('ro')), ('in', ('rw'))],                                            # noqa: E127
+                                                                                                                                                    MountRule.ALL, '/dest',         False, False, False, '')),  # noqa: E127
+        ('mount options in (ro) fstype=ext4 options in (rw) -> /dest,',     MountRule('mount',   ('=', ['ext4']),          [('in', ('ro')), ('in', ('rw'))],                                            # noqa: E127
+                                                                                                                                                    MountRule.ALL, '/dest',         False, False, False, '')),  # noqa: E127
+        ('mount options = (ro) options in (rw) fstype=ext4 -> /dest,',      MountRule('mount',   ('=', ['ext4']),          [('=', ('ro')), ('in', ('rw'))],                                             # noqa: E127
+                                                                                                                                                    MountRule.ALL, '/dest',         False, False, False, '')),  # noqa: E127
+        ('mount options = (ro) fstype=ext4 options in (rw) -> /dest,',      MountRule('mount',   ('=', ['ext4']),          [('=', ('ro')), ('in', ('rw'))],                                             # noqa: E127
+                                                                                                                                                    MountRule.ALL, '/dest',         False, False, False, '')),  # noqa: E127
+
         ('umount,',                                                         MountRule('umount',  MountRule.ALL,            MountRule.ALL,           MountRule.ALL,  MountRule.ALL,  False, False, False, '')),
         ('umount fstype=ext3,',                                             MountRule('umount',  ('=', ['ext3']),          MountRule.ALL,           MountRule.ALL,  MountRule.ALL,  False, False, False, '')),
         ('umount /a,',                                                      MountRule('umount',  MountRule.ALL,            MountRule.ALL,           MountRule.ALL,  '/a',           False, False, False, '')),
@@ -95,14 +109,6 @@ class MountTestParseInvalid(AATest):
         ('mount options=(),',        AppArmorException),
         ('mount option=(invalid),',  AppArmorException),
         ('mount option=(ext3ext4),', AppArmorException),
-
-        # mount rules with multiple 'options' are not supported by the tools yet, and when writing them, only the last 'options' would survive. Therefore MountRule intentionally raises an exception when parsing such a rule.
-        ('mount options=(ro) options=(rw) fstype=ext4 -> /destination,',        AppArmorException),
-        ('mount options=(ro) fstype=ext4 options=(rw) -> /destination,',        AppArmorException),
-        ('mount options in (ro) options in (rw) fstype=ext4 -> /destination,',  AppArmorException),
-        ('mount options in (ro) fstype=ext4 options in (rw) -> /destination,',  AppArmorException),
-        ('mount options = (ro) options in (rw) fstype=ext4 -> /destination,',   AppArmorException),
-        ('mount options = (ro) fstype=ext4 options in (rw) -> /destination,',   AppArmorException),
 
         # mount rules with multiple 'fstype' are not supported by the tools yet, and when writing them, only the last 'fstype' would survive. Therefore MountRule intentionally raises an exception when parsing such a rule.
         ('mount options=(ro) fstype=ext3 fstype=ext4 -> /destination,',             AppArmorException),
@@ -264,8 +270,9 @@ class MountIsCoveredTest(AATest):
     def test_is_covered(self):
         obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('=', ('ro')), '/foo/b*', '/b*')
         tests = [
-            ('mount', ('=', ['ext3', 'ext4']), ('=', ('ro')), '/foo/b', '/bar'),
-            ('mount', ('=', ['ext3', 'ext4']), ('=', ('ro')), '/foo/bar', '/b')
+            ('mount', ('=', ['ext3', 'ext4']), ('=', ('ro')),   '/foo/b', '/bar'),
+            ('mount', ('=', ['ext3', 'ext4']), ('=', ('ro')),   '/foo/bar', '/b'),
+            ('mount', ('=', ['ext3', 'ext4']), [('=', ('ro'))], '/foo/bar', '/b')
         ]
         for test in tests:
             self.assertTrue(obj.is_covered(MountRule(*test)))
@@ -296,19 +303,68 @@ class MountIsCoveredTest(AATest):
             self.assertTrue(obj.is_covered(MountRule(*test)))
             self.assertFalse(obj.is_equal(MountRule(*test)))
 
+    def test_is_covered_options_diff_operator(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('=', ('ro')), '/foo/b*', '/b*')
+        test_obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('in', ('ro')), '/foo/b*', '/b*')
+        self.assertFalse(obj.is_covered(test_obj), '\n' + test_obj.get_clean() + '\n should not be covered by\n' + obj.get_clean())
+
+    def test_is_covered_options_all(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), MountRule.ALL, '/foo/b*', '/b*')
+        test_obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('in', ('ro')), '/foo/b*', '/b*')
+        self.assertTrue(obj.is_covered(test_obj), '\n' + test_obj.get_clean() + '\n should be covered by\n' + obj.get_clean())
+
+    def test_is_covered_options_true(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('in', ('ro')), ('=', ('rw', 'noexec')), ('in', ('ro', 'nosuid'))], '/foo/b*', '/b*')
+        test_obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('=', ('rw', 'noexec')), ('in', ('ro', 'nosuid'))], '/foo/b*', '/b*')
+        self.assertTrue(obj.is_covered(test_obj), '\n' + test_obj.get_clean() + '\n should be covered by\n' + obj.get_clean())
+
+    def test_is_equal_options_diff_operator(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('=', ('ro')), '/foo/b*', '/b*')
+        test_obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('in', ('ro')), '/foo/b*', '/b*')
+        self.assertFalse(obj.is_equal(test_obj, True), '\n' + test_obj.get_clean() + '\n should not be equal to\n' + obj.get_clean())
+
+    def test_is_equal_options_diff_options(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('in', ('ro')), ('=', ('nosuid', 'noexec'))], '/foo/b*', '/b*')
+        test_obj = MountRule('mount', ('=', ('ext3', 'ext4')), ('in', ('ro')), '/foo/b*', '/b*')
+        self.assertFalse(obj.is_equal(test_obj, True), '\n' + test_obj.get_clean() + '\n should not be equal to\n' + obj.get_clean())
+
+    def test_is_equal_options_true(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('in', ('ro')), ('=', ('nosuid', 'noexec'))], '/foo/b*', '/b*')
+        test_obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('in', ('ro')), ('=', ('nosuid', 'noexec'))], '/foo/b*', '/b*')
+        self.assertTrue(obj.is_equal(test_obj, True), '\n' + test_obj.get_clean() + '\n should be equal to\n' + obj.get_clean())
+
+    def test_eq_cond_diff_instance(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('in', ('ro')), ('=', ('nosuid', 'noexec'))], '/foo/b*', '/b*')
+        test_obj = MountConditional('options', ['ro'], False, 'in')
+        self.assertFalse(test_obj == obj, 'Incompatible comparison')
+
+    def test_covered_cond_diff_instance(self):
+        obj = MountRule('mount', ('=', ('ext3', 'ext4')), [('in', ('ro')), ('=', ('nosuid', 'noexec'))], '/foo/b*', '/b*')
+        test_obj = MountConditional('options', ['ro'], False, 'in')
+        self.assertFalse(test_obj.is_covered(obj), 'Incompatible comparison')
+
+    def test_covered_cond_diff_name(self):
+        obj = MountConditional('foo', ['ro'], False, '=')
+        test_obj = MountConditional('options', ['ro'], False, '=')
+        self.assertFalse(test_obj.is_covered(obj), 'Incompatible comparison')
+
     def test_is_notcovered(self):
         obj = MountRule('mount', ('=', ['ext3', 'ext4']), ('=', ('ro')), '/foo/b*', '/b*')
         tests = [
-            ('mount',   ('in', ['ext3', 'ext4']),   ('=', ('ro')), '/foo/bar',     '/bar'),
-            ('mount',   ('=', ['procfs', 'ext4']),  ('=', ('ro')), '/foo/bar',     '/bar'),
-            ('mount',   ('=', ['ext3']),            ('=', ('rw')), '/foo/bar',     '/bar'),
+            ('mount',   ('in', ['ext3', 'ext4']),   ('=',  ('ro')), '/foo/bar',     '/bar'),
+            ('mount',   ('=', ['procfs', 'ext4']),  ('=',  ('ro')), '/foo/bar',     '/bar'),
+            ('mount',   ('=', ['ext3']),            ('=',  ('rw')), '/foo/bar',     '/bar'),
             ('mount',   ('=', ['ext3', 'ext4']),    MountRule.ALL, '/foo/b*',      '/bar'),
-            ('mount',   MountRule.ALL,              ('=', ('ro')), '/foo/b*',      '/bar'),
-            ('mount',   ('=', ['ext3', 'ext4']),    ('=', ('ro')), '/invalid/bar', '/bar'),
+            ('mount',   MountRule.ALL,              ('=',  ('ro')), '/foo/b*',      '/bar'),
+            ('mount',   ('=', ['ext3', 'ext4']),    ('=',  ('ro')), '/invalid/bar', '/bar'),
             ('umount',  MountRule.ALL,              MountRule.ALL, MountRule.ALL,  '/bar'),
             ('remount', MountRule.ALL,              MountRule.ALL, MountRule.ALL,  '/bar'),
-            ('mount',   ('=', ['ext3', 'ext4']),    ('=', ('ro')), 'tmpfs',        '/bar'),
-            ('mount',   ('=', ['ext3', 'ext4']),    ('=', ('ro')), '/foo/b*',      '/invalid'),
+            ('mount',   ('=', ['ext3', 'ext4']),    ('=',  ('ro')), 'tmpfs',        '/bar'),
+            ('mount',   ('=', ['ext3', 'ext4']),    ('=',  ('ro')), '/foo/b*',      '/invalid'),
+            ('mount',   ('=', ['ext3']),            ('in', ('ro')), '/foo/bar',     '/bar'),
+            ('mount',   ('=', ['ext3']),            [('in', ('ro')), ('=', ('rw'))], '/foo/bar', '/bar'),
+            ('mount',   ('=', ['ext3']),            [('=', ('ro')), ('in', ('rw'))], '/foo/bar', '/bar'),
+            ('mount',   ('=', ['ext3']),            [('=', ('ro', 'nosuid')), ('in', ('rw'))], '/foo/bar', '/bar'),
         ]
         for test in tests:
             self.assertFalse(obj.is_covered(MountRule(*test)))

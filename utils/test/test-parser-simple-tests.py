@@ -440,9 +440,8 @@ syntax_failure = (
     'file/priority/ok_quoted_4.sd',  # quoted string including \"
     'file/priority/ok_embedded_spaces_4.sd',  # \-escaped space
 
-    # mount rules with multiple 'options' or 'fstype' are not supported by the tools yet, and when writing them, only the last 'options'/'fstype' would survive.
+    # mount rules with multiple 'fstype' are not supported by the tools yet, and when writing them, only the last 'fstype' would survive.
     # Therefore MountRule intentionally raises an exception when parsing such a rule.
-    'mount/ok_opt_87.sd',  # multiple options
     'mount/ok_opt_88.sd',  # multiple fstype
 
     # misc
