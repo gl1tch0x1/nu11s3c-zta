@@ -37,7 +37,7 @@ from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletyp
 from apparmor.regex import (
     RE_HAS_COMMENT_SPLIT, RE_PROFILE_CHANGE_HAT, RE_PROFILE_CONDITIONAL,
     RE_PROFILE_CONDITIONAL_BOOLEAN, RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_END,
-    RE_PROFILE_HAT_DEF, RE_PROFILE_START,
+    RE_PROFILE_HAT_DEF, RE_PROFILE_START, RE_METADATA_LOGPROF_SUGGEST,
     RE_RULE_HAS_COMMA, parse_profile_start_line, re_match_include)
 from apparmor.rule.abi import AbiRule
 from apparmor.rule.file import FileRule
@@ -1420,8 +1420,20 @@ def match_includes(profile, rule_type, rule_obj):
 
         # XXX type check should go away once we init all profiles correctly
         if valid_include(incname) and include[incname][incname][rule_type].is_covered(rule_obj):
-            if include[incname][incname]['logprof_suggest'] != 'no':
+            sug = include[incname][incname]['logprof_suggest'].split()
+            if sug == []:
                 newincludes.append(rel_incname)
+            elif sug[0] == 'no':
+                continue
+            else:
+                for s in sug:
+                    try:
+                        if re.match(s, profile.data['name']):
+                            newincludes.append(rel_incname)
+                            break
+                    except re.error as err:
+                        aaui.UI_Important(_('WARNING: Invalid regex \'%s\' in abstraction %s: %s.'
+                                            % (s, rel_incname, err)))
 
     return newincludes
 
@@ -1832,10 +1844,11 @@ def parse_profile_data(data, file, do_include, in_preamble):
                 else:
                     initial_comment = initial_comment + line + '\n'
 
-            if line.startswith('# LOGPROF-SUGGEST:'):  # TODO: allow any number of spaces/tabs after '#'
-                parts = line.split()
-                if len(parts) > 2:
-                    profile_data[profname]['logprof_suggest'] = parts[2]
+            if RE_METADATA_LOGPROF_SUGGEST.search(line):
+                # - logprof_suggest is a set of space-separated regexes
+                # - If this metadata is present, the abstraction is only proposed to logprof if at least one regex is matched
+                # - If this abstraction should not be proposed to any profile, it is possible to tell #LOGPROF-SUGGEST: no
+                profile_data[profname]['logprof_suggest'] = RE_METADATA_LOGPROF_SUGGEST.search(line).group('suggest')
 
                 # keep line as part of initial_comment (if we ever support writing abstractions, we should update serialize_profile())
                 initial_comment = initial_comment + line + '\n'

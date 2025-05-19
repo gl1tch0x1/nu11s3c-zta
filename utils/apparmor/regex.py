@@ -61,6 +61,8 @@ RE_PROFILE_USERNS = re.compile(RE_PRIORITY_AUDIT_DENY + r'(userns\s*,|userns(?P<
 RE_PROFILE_MQUEUE = re.compile(RE_PRIORITY_AUDIT_DENY + r'(mqueue\s*,|mqueue(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_IO_URING = re.compile(RE_PRIORITY_AUDIT_DENY + r'(io_uring\s*,|io_uring(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 
+RE_METADATA_LOGPROF_SUGGEST = re.compile(r'^\s*#\s*LOGPROF-SUGGEST\s*:\s*(?P<suggest>.*)$')
+
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
 
