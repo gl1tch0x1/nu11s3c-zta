@@ -1,25 +1,20 @@
 abi <abi/4.0>,
-
 include <tunables/global>
 
 profile john /usr/sbin/john {
   include <abstractions/base>
   include <abstractions/consoles>
-  include <abstractions/evince>
+  include <abstractions/nameservice>
   include if exists <local/john>
 
   /usr/sbin/john mr,
-  @{etc_ro}/john/john.conf r,
-  @{etc_ro}/nsswitch.conf r,
-  @{etc_ro}/passwd r,
-  owner @{HOME}* r,
-  owner @{HOME}*.log wk,
-  owner @{HOME}*.rec wk,
-  owner @{HOME}.john/ w,
-  owner @{HOME}.john/*.log wk,
-  owner @{HOME}.john/*.pot rw,
-  owner @{HOME}.john/*.rec rwk,
-  owner @{etc_ro}/shadow r,
 
+  /** r,
+
+  deny @{HOME}/.* rwl,
+
+  @{HOME}/.john/ rw,
+  @{HOME}/.john/*.log rwk,
+  @{HOME}/.john/*.pot rwk,
+  @{HOME}/.john/*.rec rwk,
 }
-
