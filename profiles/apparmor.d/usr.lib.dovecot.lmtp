@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2013-2020 Christian Boltz
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim: ft=apparmor
 
 abi <abi/4.0>,
 
@@ -34,7 +34,7 @@ profile dovecot-lmtp /usr/lib*/dovecot/lmtp {
   owner @{PROC}/@{pid}/stat r,
   @{PROC}/*/mounts r,
   /tmp/dovecot.lmtp.* rw,
-  /usr/lib*/dovecot/lmtp mr,
+  @{exec_path} mr,
   @{run}/dovecot/mounts r,
 
   # Site-specific additions and overrides. See local/README for details.

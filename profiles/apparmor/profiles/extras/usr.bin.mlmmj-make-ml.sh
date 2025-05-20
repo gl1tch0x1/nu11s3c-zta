@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -21,7 +21,7 @@ include <tunables/global>
 
   capability sys_admin,
 
-  /usr/bin/mlmmj-make-ml.sh r,
+  @{exec_path} r,
 
   # some shell tools are needed
   /{usr/,}bin/domainname mix,

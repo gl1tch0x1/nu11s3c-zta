@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -46,7 +46,7 @@ include <tunables/global>
   /usr/bin/iconv rmix,
   /{usr/,}bin/less rmix,
   /usr/bin/locale rmix,
-  /usr/bin/man rmix,
+  @{exec_path} mrix,
   /usr/bin/nroff rmix,
   /usr/bin/preconv rmix,
   /usr/bin/tbl rmix,

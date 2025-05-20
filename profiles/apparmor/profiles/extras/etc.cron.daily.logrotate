@@ -1,4 +1,4 @@
-# vim:syntax=apparmor
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
@@ -39,7 +39,7 @@ include <tunables/global>
   /usr/bin/head mrix,
   /usr/bin/killall mixr,
   /usr/sbin/invoke-rc.d mrix,
-  /usr/sbin/logrotate mixr,
+  @{exec_path} mrix,
 
   ## see https://lists.ubuntu.com/archives/apparmor/2016-December/010359.html
   /{usr/,}sbin/initctl Ux,

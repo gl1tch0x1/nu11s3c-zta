@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2009-2013 Canonical Ltd.
@@ -8,7 +9,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim: ft=apparmor
 
 abi <abi/4.0>,
 
@@ -67,7 +67,7 @@ profile dovecot /usr/{bin,sbin}/dovecot flags=(attach_disconnected) {
   /usr/lib*/dovecot/ssl-build-param rix,
   /usr/lib*/dovecot/ssl-params mrPx,
   /usr/lib*/dovecot/stats Px,
-  /usr/{bin,sbin}/dovecot mrix,
+  @{exec_path} mrix,
   /usr/share/dovecot/dh.pem r,
   /usr/share/dovecot/protocols.d/   r,
   /usr/share/dovecot/protocols.d/** r,

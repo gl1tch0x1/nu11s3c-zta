@@ -1,4 +1,4 @@
-# vim:syntax=apparmor
+# vim:ft=apparmor
 
 abi <abi/4.0>,
 
@@ -15,8 +15,6 @@ profile nvidia_modprobe {
   capability sys_admin,
 
   # Main executable
-
-  /usr/bin/nvidia-modprobe mr,
 
   # Other executables
 

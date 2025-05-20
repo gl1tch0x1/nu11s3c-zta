@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -79,7 +79,7 @@ include <tunables/global>
 
   /usr/local/tomcat/conf/mod_jk.conf r,
   /usr/local/tomcat/conf/workers-ajp12.properties r,
-  /usr/sbin/httpd2-prefork r,
+  @{exec_path} r,
   /usr/share/misc/magic.mime r,
   /usr/share/snmp/mibs r,
   /usr/share/snmp/mibs/*.{txt,mib} r,

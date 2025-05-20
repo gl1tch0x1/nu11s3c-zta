@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 # Last Modified: Wed Feb 23 11:03:18 2005
 
 abi <abi/4.0>,
@@ -18,7 +18,7 @@ include <tunables/global>
   include <abstractions/base>
   include <abstractions/nameservice>
 
-  /usr/bin/spamc r,
+  @{exec_path} r,
 
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/usr.bin.spamc>

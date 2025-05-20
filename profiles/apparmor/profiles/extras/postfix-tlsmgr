@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -8,7 +9,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -19,7 +19,7 @@ profile postfix-tlsmgr /usr/lib{,exec}/postfix/{bin/,sbin/,}tlsmgr {
   include <abstractions/nameservice>
   include <abstractions/postfix-common>
 
-  /usr/lib{,exec}/postfix/{bin/,sbin/,}tlsmgr mrix,
+  @{exec_path} mrix,
 
   /var/spool/postfix/dev/urandom r,
   /{etc,var/lib}/postfix/prng_exch            rwk,

@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2013-2020 Christian Boltz
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim: ft=apparmor
 
 abi <abi/4.0>,
 
@@ -19,7 +19,7 @@ profile dovecot-ssl-params /usr/lib*/dovecot/ssl-params {
 
   @{run}/dovecot/ssl-params rw,
   @{run}/dovecot/login/ssl-params rw,
-  /usr/lib*/dovecot/ssl-params mr,
+  @{exec_path} mr,
   /var/lib/dovecot/ssl-parameters.dat rw,
   /var/lib/dovecot/ssl-parameters.dat.tmp rwk,
 

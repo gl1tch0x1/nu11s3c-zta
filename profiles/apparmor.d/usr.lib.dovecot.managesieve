@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2013-2020 Christian Boltz
@@ -8,7 +9,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim: ft=apparmor
 
 abi <abi/4.0>,
 
@@ -29,7 +29,7 @@ profile dovecot-managesieve /usr/lib*/dovecot/managesieve {
 
   /etc/dovecot/** r,
   /usr/bin/doveconf rix,
-  /usr/lib*/dovecot/managesieve mrix,
+  @{exec_path} mrix,
 
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/usr.lib.dovecot.managesieve>

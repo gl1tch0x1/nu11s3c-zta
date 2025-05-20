@@ -1,4 +1,4 @@
-# vim:syntax=apparmor
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2009-2011 Canonical Ltd.
@@ -110,7 +110,7 @@ profile firefox @{MOZ_LIBDIR}/@{MOZ_APP_NAME}{,*[^s][^h]} {
        member=GetAll
        peer=(label=unconfined),
 
-  @{MOZ_LIBDIR}/@{MOZ_APP_NAME}{,*[^s][^h]} mr,
+  @{exec_path} mr,
 
   # should maybe be in abstractions
   /etc/ r,

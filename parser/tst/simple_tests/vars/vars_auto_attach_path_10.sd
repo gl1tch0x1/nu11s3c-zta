@@ -1,0 +1,16 @@
+#=DESCRIPTION user @{attach_path} available after override
+#=EXRESULT PASS
+
+@{attach_path}=/path
+profile /a/test/profile {
+  /a/test/profile rix,
+
+  @{attach_path} rwk,
+
+}
+
+profile extra {
+
+  @{attach_path} rw,
+
+}

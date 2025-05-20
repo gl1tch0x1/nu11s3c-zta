@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2020 Michael Hirmke
@@ -8,7 +9,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim: ft=apparmor
 
 abi <abi/4.0>,
 
@@ -21,7 +21,7 @@ profile dovecot-script-login /usr/lib*/dovecot/script-login {
 
   capability setuid,
 
-  /usr/lib*/dovecot/script-login mrPx,
+  @{exec_path} mrPx,
 
   # NOTE: You'll need to allow execution of your actual login script.
   # The recommended way is to add a rule for it in local/usr.lib.dovecot.script-login

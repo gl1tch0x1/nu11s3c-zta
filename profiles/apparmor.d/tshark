@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 #------------------------------------------------------------------
 #    Copyright (C) 2024 Canonical Ltd.
 #
@@ -7,8 +8,6 @@
 #    modify it under the terms of version 2 of the GNU General Public
 #    License published by the Free Software Foundation.
 #------------------------------------------------------------------
-# vim: ft=apparmor
-#
 
 abi <abi/4.0>,
 
@@ -24,7 +23,7 @@ profile tshark /usr/bin/tshark {
   signal send peer=tshark//dumpcap,
 
   file Cx /usr/bin/dumpcap -> dumpcap,
-  file mr /usr/bin/tshark,
+  mr @{exec_path},
   file mrix /usr/lib/@{multiarch}/wireshark/extcap/{,*},
   file r /usr/share/wireshark/{,**},
   file r @{PROC}/@{pid}/fd/,

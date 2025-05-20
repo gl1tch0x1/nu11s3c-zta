@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -14,7 +15,6 @@
 # Note that dhcpcd (at least as distributed by SuSE) offers to rewrite
 # ntp.conf and yp.conf in addition to resolv.conf.
 #
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -37,7 +37,7 @@ profile dhcpcd /{usr/,}sbin/dhcpcd {
   /etc/ntp.conf{,.sv} rwl,
   /etc/sysconfig/network/scripts/dhcpcd-hook rmix,
   /etc/yp.conf{,.sv} rwl,
-  /{usr/,}sbin/dhcpcd rmix,
+  @{exec_path} mrix,
   /{usr/,}sbin/ifup Ux, # fixme
   /{usr/,}sbin/modify_resolvconf rmix,
   /var/lib/dhcpcd/dhcpcd-*.cache rw,

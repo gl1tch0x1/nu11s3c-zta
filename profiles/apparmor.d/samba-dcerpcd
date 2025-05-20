@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2022 SUSE LLC
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -20,7 +20,7 @@ profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd {
 
   @{run}/{,samba/}samba-dcerpcd.pid rwk,
 
-  /usr/lib*/samba/{,samba/}samba-dcerpcd mr,
+  @{exec_path} mr,
 
   /usr/lib*/samba/ r,
   /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper,rpcecho,fsrvp,lsad,winreg,witness} Px -> samba-rpcd,

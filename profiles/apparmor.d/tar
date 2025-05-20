@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 #------------------------------------------------------------------
 #    Copyright (C) 2024 Canonical Ltd.
 #
@@ -5,7 +6,6 @@
 #    modify it under the terms of version 2 of the GNU General Public
 #    License published by the Free Software Foundation.
 #------------------------------------------------------------------
-# vim: ft=apparmor
 
 abi <abi/4.0>,
 
@@ -25,6 +25,7 @@ profile tar /usr/bin/tar {
   file rwl /**,
 
   # tar can be made to filter archives through an arbitrary program
+  @{exec_path} mr,
   /{usr{/local,},}/{bin,sbin}/* ix,
   /opt/** ix,
 

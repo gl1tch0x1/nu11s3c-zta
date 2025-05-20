@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -7,7 +8,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -21,7 +21,7 @@ include <tunables/global>
   capability dac_override,
   capability dac_read_search,
 
-  /usr/sbin/oidentd mr,
+  @{exec_path} mr,
 
   /etc/oidentd.conf        r,
   /etc/oidentd_masq.conf   r,

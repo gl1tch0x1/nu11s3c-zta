@@ -1,3 +1,4 @@
+# vim: ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2020 SUSE LLC
@@ -9,7 +10,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim: ft=apparmor
 # for https://wiki.dovecot.org/Replication
 
 abi <abi/4.0>,
@@ -27,7 +27,7 @@ profile dovecot-replicator /usr/lib*/dovecot/replicator {
   /etc/dovecot/conf.d/ r,
   /etc/dovecot/conf.d/** r,
   /etc/dovecot/dovecot.conf r,
-  /usr/lib*/dovecot/replicator mr,
+  @{exec_path} mr,
   /usr/share/dovecot/** r,
   /{,var/}run/dovecot/auth-master rw,
   @{DOVECOT_MAILSTORE}/ rw,

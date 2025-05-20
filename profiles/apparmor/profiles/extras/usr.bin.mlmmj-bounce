@@ -1,3 +1,4 @@
+# vim:ft=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -8,7 +9,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# vim:syntax=apparmor
 
 abi <abi/4.0>,
 
@@ -17,7 +17,7 @@ include <tunables/global>
 /usr/bin/mlmmj-bounce {
   include <abstractions/base>
 
-  /usr/bin/mlmmj-bounce mr,
+  @{exec_path} mr,
   /usr/bin/mlmmj-send Px,
   /usr/bin/mlmmj-maintd Px,
   /var/spool/mlmmj/*/subscribers.d/ r,
