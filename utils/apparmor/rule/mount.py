@@ -124,18 +124,26 @@ class MountRule(BaseRule):
 
         self.operation = operation
 
-        if fstype == self.ALL or fstype[1] == self.ALL:
-            self.all_fstype = True
-            self.fstype = None
-            self.is_fstype_equal = None
-        else:
-            self.all_fstype = False
-            for it in fstype[1]:
-                aare_len, unused = parse_aare(it, 0, 'fstype')
-                if aare_len != len(it):
-                    raise AppArmorException(f'Invalid aare : {it}')
-            self.fstype = fstype[1]
-            self.is_fstype_equal = fstype[0]
+        if not isinstance(fstype, list):
+            fstype = [fstype]
+
+        # self.all_fstype will only be true if no fstypes are
+        # specified, so it's fine to set it inside the loop
+        self.fstype = []
+        for fst in fstype:
+            if fst == self.ALL or fst[1] == self.ALL:
+                self.all_fstype = True
+                fstype_values = None
+                is_fstype_equal = None
+            else:
+                self.all_fstype = False
+                for it in fst[1]:
+                    aare_len, unused = parse_aare(it, 0, 'fstype')
+                    if aare_len != len(it):
+                        raise AppArmorException(f'Invalid aare : {it}')
+                fstype_values = fst[1]
+                is_fstype_equal = fst[0]
+            self.fstype.append(MountConditional('fstype', fstype_values, self.all_fstype, is_fstype_equal, 'aare'))
 
         if not isinstance(options, list):
             options = [options]
@@ -148,13 +156,11 @@ class MountRule(BaseRule):
             if unknown_items:
                 raise AppArmorException(_('Passed unknown options keyword to %s: %s') % (type(self).__name__, ' '.join(unknown_items)))
             is_options_equal = opts[0] if not self.all_options else None
-            self.options.append(MountConditional('options', opt_values, self.all_options, is_options_equal))
+            self.options.append(MountConditional('options', opt_values, self.all_options, is_options_equal, 'list'))
 
         self.source, self.all_source = self._aare_or_all(source, 'source', is_path=False, log_event=log_event, empty_ok=True)
         self.dest, self.all_dest = self._aare_or_all(dest, 'dest', is_path=False, log_event=log_event)
 
-        if not self.all_fstype and self.is_fstype_equal not in ('=', 'in'):
-            raise AppArmorBug(f'Invalid is_fstype_equal : {self.is_fstype_equal}')
         if self.operation != 'mount' and not self.all_source:
             raise AppArmorException(f'Operation {self.operation} cannot have a source')
 
@@ -191,17 +197,12 @@ class MountRule(BaseRule):
             if not r:
                 raise AppArmorException('Can\'t parse mount rule ' + raw_rule)
 
+            fstype = (None, cls.ALL)
             if r['fstype'] is not None:
-                # mount rules with multiple 'fstype' are not supported by the tools yet, and when writing them, only the last 'fstype' would survive.
-                # Therefore raise an exception when parsing such a rule to prevent breaking the rule.
-                if RE_MOUNT_MULTIPLE_FS_TYPE.search(raw_rule):
-                    raise AppArmorException("mount rules with multiple 'fstype' are not supported by the tools")
-
-                is_fstype_equal = r['fstype_equals_or_in']
-                fstype = parse_aare_list(strip_parenthesis(r['fstype']), 'fstype')
-            else:
-                is_fstype_equal = None
-                fstype = cls.ALL
+                fstype = []
+                for m in re.finditer(fs_type_pattern, rule_details):
+                    fst = parse_aare_list(strip_parenthesis(m.group('fstype')), 'fstype')
+                    fstype.append((m.group('fstype_equals_or_in'), fst))
 
             opts = (None, cls.ALL)
             if r['options'] is not None:
@@ -222,19 +223,21 @@ class MountRule(BaseRule):
 
         else:
             opts = (None, cls.ALL)
-            is_fstype_equal = None
-            fstype = cls.ALL
+            fstype = (None, cls.ALL)
             source = cls.ALL
             dest = cls.ALL
 
-        return cls(operation=operation, fstype=(is_fstype_equal, fstype), options=opts,
+        return cls(operation=operation, fstype=fstype, options=opts,
                    source=source, dest=dest, audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment,
                    priority=priority)
 
     def get_clean(self, depth=0):
         space = '  ' * depth
 
-        fstype = ' fstype%s(%s)' % (wrap_in_with_spaces(self.is_fstype_equal), ', '.join(sorted(self.fstype))) if not self.all_fstype else ''
+        fstype = ''
+        for fst in self.fstype:
+            fstype += fst.get_clean()
+
         options = ''
         for opt in self.options:
             options += opt.get_clean()
@@ -277,17 +280,8 @@ class MountRule(BaseRule):
     def _is_covered_localvars(self, other_rule):
         if self.operation != other_rule.operation:
             return False
-        if self.is_fstype_equal != other_rule.is_fstype_equal:
+        if not self._is_cond_list_covered(self.fstype, other_rule.fstype):
             return False
-
-        for o_it in other_rule.fstype or []:
-            found = False
-            for s_it in self.fstype or []:
-                if self._is_covered_aare(AARE(s_it, False), self.all_fstype, AARE(o_it, False), other_rule.all_fstype, 'fstype'):
-                    found = True
-
-            if not found:
-                return False
         if not self._is_cond_list_covered(self.options, other_rule.options):
             return False
         if not self._is_covered_aare(self.source, self.all_source, other_rule.source, other_rule.all_source, 'source'):
@@ -299,8 +293,6 @@ class MountRule(BaseRule):
 
     def _is_equal_localvars(self, rule_obj, strict):
         if self.operation != rule_obj.operation:
-            return False
-        if self.is_fstype_equal != rule_obj.is_fstype_equal:
             return False
         if self.fstype != rule_obj.fstype or self.options != rule_obj.options:
             return False
@@ -352,7 +344,12 @@ class MountRule(BaseRule):
 
     def _logprof_header_localvars(self):
         operation = self.operation
-        fstype = logprof_value_or_all(self.fstype, self.all_fstype)
+
+        fstype_output = ()
+        for fst in self.fstype:
+            fstype = logprof_value_or_all(fst.values, fst.all_values)
+            fstype_output = fstype_output + (_('Fstype'), (fst.operator, fstype) if fstype != 'ALL' else fstype)
+
         opts_output = ()
         for opt in self.options:
             options = logprof_value_or_all(opt.values, opt.all_values)
@@ -362,7 +359,7 @@ class MountRule(BaseRule):
 
         return (
             _('Operation'), operation,
-            _('Fstype'), (self.is_fstype_equal, fstype) if fstype != 'ALL' else fstype,
+            *fstype_output,
             *opts_output,
             _('Source'), source,
             _('Destination'), dest,
@@ -416,11 +413,13 @@ def wrap_in_with_spaces(value):
 
 class MountConditional(MountRule):
     '''Class to handle and store mount conditionals'''
-    def __init__(self, name, values, all_values, operator):
+    def __init__(self, name, values, all_values, operator, cond_type=None):
         self.name = name
         self.values = values
         self.all_values = all_values
         self.operator = operator
+        self.cond_type = cond_type
+        self.raw_rule = ''  # needed so __repr__ calls get_clean
 
         if not self.all_values and self.operator not in ('=', 'in'):
             raise AppArmorBug(f'Invalid operator for {self.name}: {self.operator}')
@@ -430,6 +429,9 @@ class MountConditional(MountRule):
             return False
 
         if self.all_values != other.all_values:
+            return False
+
+        if self.cond_type != other.cond_type:
             return False
 
         if self.values != other.values:
@@ -450,13 +452,27 @@ class MountConditional(MountRule):
         if self.all_values:
             return True
 
-        if self._is_covered_list(self.values, self.all_values, other.values, other.all_values, self.name):
-            if self.operator == other.operator:
-                return True
+        if other.all_values:
+            return False
+
+        if self.cond_type == 'list':
+            if not self._is_covered_list(self.values, self.all_values, other.values, other.all_values, self.name):
+                return False
+        elif self.cond_type == 'aare':  # list of aares - all values in other must be at least once in self.values
+            if not all(any(self._is_covered_aare(AARE(value, False), self.all_values,
+                                                 AARE(other_value, False), other.all_values, self.name)
+                           for value in self.values)
+                       for other_value in other.values):
+                return False
+        else:
+            raise AppArmorBug('Type should only be empty if ALL is true')
+
+        if self.operator == other.operator:
+            return True
 
         return False
 
-    def get_clean(self) -> str:
+    def get_clean(self, depth=0) -> str:
         conditional = ''
         if not self.all_values:
             conditional += ' %s%s(%s)' % (self.name, wrap_in_with_spaces(self.operator), ', '.join(sorted(self.values)))
