@@ -27,6 +27,9 @@ profile lsblk /usr/bin/lsblk {
   @{sys}/devices/virtual/** r,
   @{sys}/devices/platform/** r,
 
+  # Needed for Xen PVH guests
+  @{sys}/devices/vbd-[0-9]*/block/** r,
+
   # Needed for disks over network e.g. Hyper-V VMs (including Azure), IBM Power, ...
   @{sys}/devices/**/host@{int}/** r,
 
