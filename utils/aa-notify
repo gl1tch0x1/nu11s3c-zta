@@ -850,7 +850,7 @@ def main():
     filter_group.add_argument('--filter.family', metavar='FAMILY', help=_('regular expression to match the network family'))
     filter_group.add_argument('--filter.socket', metavar='SOCKET', help=_('regular expression to match the network socket type'))
 
-    # If a TTY then assume running in test mode and fix output width
+    # If not a TTY then assume running in test mode and fix output width
     if not sys.stdout.isatty():
         parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=80)
 

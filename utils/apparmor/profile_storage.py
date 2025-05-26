@@ -13,9 +13,10 @@
 #
 # ----------------------------------------------------------------------
 
+from types import NoneType
 
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.regex import parse_profile_start_line
+from apparmor.regex import parse_profile_start_line, re_print_dict
 from apparmor.rule import quote_if_needed
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.all import AllRule, AllRuleset
@@ -79,7 +80,7 @@ class ProfileStorage:
         data['parent'] = ''  # parent profile, or '' for top-level profiles and external hats
         data['name'] = ''
         data['attachment'] = ''
-        data['xattrs'] = ''
+        data['xattrs'] = {}
         data['flags'] = ''
         data['external'] = False
         data['header_comment'] = ''  # comment in the profile/hat start line
@@ -100,28 +101,16 @@ class ProfileStorage:
         if key not in self.data:
             raise AppArmorBug('attempt to set unknown key %s' % key)
 
-        # allow writing bool values
-        if isinstance(self.data[key], bool):
-            if isinstance(value, bool):
+        allowed_types = {bool, str, dict, None, NoneType}
+        old_type = type(self.data[key])
+        if old_type in allowed_types:
+            if key in {'flags', 'filename'} and type(value) in {str, NoneType}:
+                self.data[key] = value
+            elif isinstance(value, old_type):
                 self.data[key] = value
             else:
-                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
-
-        # allow writing str or None to some keys
-        elif key in ('flags', 'filename'):
-            if isinstance(value, str) or value is None:
-                self.data[key] = value
-            else:
-                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
-
-        # allow writing str values
-        elif isinstance(self.data[key], str):
-            if isinstance(value, str):
-                self.data[key] = value
-            else:
-                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
-
-        # don't allow overwriting of other types
+                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, old_type, type(value), value))
+            self.data[key] = value
         else:
             raise AppArmorBug('Attempt to overwrite "%s" with %s, type %s' % (key, value, type(value)))
 
@@ -168,7 +157,7 @@ class ProfileStorage:
 
         xattrs = ''
         if self.data['xattrs']:
-            xattrs = ' xattrs=(%s)' % self.data['xattrs']
+            xattrs = ' xattrs=(%s)' % re_print_dict(self.data['xattrs'])
 
         flags = ''
         if self.data['flags']:
@@ -263,7 +252,7 @@ class ProfileStorage:
         else:
             prof_storage['profile_keyword'] = matches['profile_keyword']
             prof_storage['attachment'] = matches['attachment'] or ''
-            prof_storage['xattrs'] = matches['xattrs'] or ''
+            prof_storage['xattrs'] = matches['xattrs'] or {}
 
         return (profile, hat, prof_storage)
 
