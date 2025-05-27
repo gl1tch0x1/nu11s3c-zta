@@ -212,6 +212,18 @@ test_nonfs_options_equals_in() {
 	remove_mnt
 }
 
+test_nonfs_options_equals_in_ext() {
+	# args: option=$1, option in $2, $3=pass/fail, mount -o $4
+	if [ "$(parser_supports "mount options=($1) options in ($2),")" != "true" ] ; then
+	        echo "    not supported by parser - skipping mount options=($1) options in ($2),"
+		return
+	fi
+
+	genprofile cap:sys_admin "mount:options=($1) options in ($2)"
+	runchecktest "MOUNT (confined cap mount option=$1 option in $2 ($4))" $3 mount ${loop_device} ${mount_point} -o $4
+	remove_mnt
+}
+
 test_dir_options() {
 	if [ "$(parser_supports "mount options=($1),")" != "true" ] ; then
 		echo "    not supported by parser - skipping mount option=($1),"
@@ -287,6 +299,9 @@ test_options() {
 
 	# TODO: expand this to cover more mount flag combinations
 	test_nonfs_options_equals_in 'nosuid,nodev' 'noatime,noexec'
+
+	test_nonfs_options_equals_in_ext 'nosuid,nodev' 'noatime' 'fail' 'nosuid,nodev,noexec'
+	test_nonfs_options_equals_in_ext 'nosuid,nodev' 'noatime' 'fail' 'nosuid,nodev,noatime,noexec'
 
 	for i in "bind" "rbind" "move"; do
 		test_dir_options $i
