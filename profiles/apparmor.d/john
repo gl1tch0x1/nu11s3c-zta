@@ -4,7 +4,7 @@ include <tunables/global>
 profile john /usr/sbin/john {
   include <abstractions/base>
   include <abstractions/consoles>
-  include <abstractions/nameservice>
+  include <abstractions/nameservice-strict>
   include <abstractions/private-files-strict>
   include if exists <local/john>
 
