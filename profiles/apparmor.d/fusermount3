@@ -11,11 +11,12 @@ profile fusermount3 /usr/bin/fusermount3 {
 
   # Allow both rw and ro type mounts (e.g. AppImage uses ro)
   #MS_DIRSYNC, MS_NOATIME, MS_NODIRATIME, MS_NOEXEC, MS_SYNCHRONOUS, MS_NOSYMFOLLOW
-  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,sync) -> @{HOME}/**/,
-  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,sync) -> /mnt/{,**/},
-  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,sync) -> @{run}/user/@{uid}/**/,
-  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,sync) -> /media/**/,
-  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,sync) -> /tmp/**/,
+  # Below broad mount flags should be revisited once we have rule delegation
+  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,noexec,sync) -> @{HOME}/**/,
+  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,noexec,sync) -> /mnt/{,**/},
+  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,noexec,sync) -> @{run}/user/@{uid}/**/,
+  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,noexec,sync) -> /media/**/,
+  mount fstype=@{fuse_types} options=(nosuid,nodev) options in (ro,rw,noatime,dirsync,nodiratime,noexec,sync) -> /tmp/**/,
   # Cern VM fs is special and only uses these exact flags
   mount fstype=@{fuse_types} options=(nosuid,nodev,ro) -> /cvmfs/**/,
 

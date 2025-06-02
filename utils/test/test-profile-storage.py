@@ -41,30 +41,30 @@ class TestUnknownKey(AATest):
 class AaTest_get_header(AATest):
     tests = (
         # name       embedded_hat  depth  flags       attachment  xattrs          prof.keyw.  comment  expected
-        (('/foo',    False,        1,     'complain', '',         '',             False,      ''),     '  /foo flags=(complain) {'),
-        (('/foo',    True,         1,     'complain', '',         '',             False,      ''),     '  profile /foo flags=(complain) {'),
-        (('/foo sp', False,        2,     'complain', '',         '',             False,      ''),     '    "/foo sp" flags=(complain) {'),
-        (('/foo',    True,         2,     'complain', '',         '',             False,      ''),     '    profile /foo flags=(complain) {'),
-        (('/foo',    False,        0,     None,       '',         '',             False,      ''),     '/foo {'),
-        (('/foo',    False,        0,     None,       '',         'user.foo=bar', False,      ''),     '/foo xattrs=(user.foo=bar) {'),
-        (('/foo',    True,         0,     None,       '',         '',             False,      ''),     'profile /foo {'),
-        (('bar',     False,        1,     'complain', '',         '',             False,      ''),     '  profile bar flags=(complain) {'),
-        (('bar',     False,        1,     'complain', '/foo',     '',             False,      ''),     '  profile bar /foo flags=(complain) {'),
-        (('bar',     True,         1,     'complain', '/foo',     '',             False,      ''),     '  profile bar /foo flags=(complain) {'),
-        (('bar baz', False,        1,     None,       '/foo',     '',             False,      ''),     '  profile "bar baz" /foo {'),
-        (('bar',     True,         1,     None,       '/foo',     '',             False,      ''),     '  profile bar /foo {'),
-        (('bar baz', False,        1,     'complain', '/foo sp',  '',             False,      ''),     '  profile "bar baz" "/foo sp" flags=(complain) {'),
-        (('bar baz', False,        1,     'complain', '/foo sp',  'user.foo=bar', False,      ''),     '  profile "bar baz" "/foo sp" xattrs=(user.foo=bar) flags=(complain) {'),
-        (('^foo',    False,        1,     'complain', '',         '',             False,      ''),     '  profile ^foo flags=(complain) {'),
-        (('^foo',    True,         1,     'complain', '',         '',             False,      ''),     '  ^foo flags=(complain) {'),
-        (('^foo',    True,         1.5,   'complain', '',         '',             False,      ''),     '   ^foo flags=(complain) {'),
-        (('^foo',    True,         1.3,   'complain', '',         '',             False,      ''),     '  ^foo flags=(complain) {'),
-        (('/foo',    False,        1,     'complain', '',         '',             True,       ''),     '  profile /foo flags=(complain) {'),
-        (('/foo',    True,         1,     'complain', '',         '',             True,       ''),     '  profile /foo flags=(complain) {'),
-        (('/foo',    False,        1,     'complain', '',         '',             False,      '# x'),  '  /foo flags=(complain) { # x'),
-        (('/foo',    True,         1,     None,       '',         '',             False,      '# x'),  '  profile /foo { # x'),
-        (('/foo',    False,        1,     None,       '',         '',             True,       '# x'),  '  profile /foo { # x'),
-        (('/foo',    True,         1,     'complain', '',         '',             True,       '# x'),  '  profile /foo flags=(complain) { # x'),
+        (('/foo',    False,        1,     'complain', '',         {},             False,      ''),     '  /foo flags=(complain) {'),
+        (('/foo',    True,         1,     'complain', '',         {},             False,      ''),     '  profile /foo flags=(complain) {'),
+        (('/foo sp', False,        2,     'complain', '',         {},             False,      ''),     '    "/foo sp" flags=(complain) {'),
+        (('/foo',    True,         2,     'complain', '',         {},             False,      ''),     '    profile /foo flags=(complain) {'),
+        (('/foo',    False,        0,     None,       '',         {},             False,      ''),     '/foo {'),
+        (('/foo',    False,        0,     None,       '',         {'user.foo': 'bar'}, False,      ''),     '/foo xattrs=(user.foo=bar) {'),
+        (('/foo',    True,         0,     None,       '',         {},             False,      ''),     'profile /foo {'),
+        (('bar',     False,        1,     'complain', '',         {},             False,      ''),     '  profile bar flags=(complain) {'),
+        (('bar',     False,        1,     'complain', '/foo',     {},             False,      ''),     '  profile bar /foo flags=(complain) {'),
+        (('bar',     True,         1,     'complain', '/foo',     {},             False,      ''),     '  profile bar /foo flags=(complain) {'),
+        (('bar baz', False,        1,     None,       '/foo',     {},             False,      ''),     '  profile "bar baz" /foo {'),
+        (('bar',     True,         1,     None,       '/foo',     {},             False,      ''),     '  profile bar /foo {'),
+        (('bar baz', False,        1,     'complain', '/foo sp',  {},             False,      ''),     '  profile "bar baz" "/foo sp" flags=(complain) {'),
+        (('bar baz', False,        1,     'complain', '/foo sp',  {'user.foo': 'bar'}, False,      ''),     '  profile "bar baz" "/foo sp" xattrs=(user.foo=bar) flags=(complain) {'),
+        (('^foo',    False,        1,     'complain', '',         {},             False,      ''),     '  profile ^foo flags=(complain) {'),
+        (('^foo',    True,         1,     'complain', '',         {},             False,      ''),     '  ^foo flags=(complain) {'),
+        (('^foo',    True,         1.5,   'complain', '',         {},             False,      ''),     '   ^foo flags=(complain) {'),
+        (('^foo',    True,         1.3,   'complain', '',         {},             False,      ''),     '  ^foo flags=(complain) {'),
+        (('/foo',    False,        1,     'complain', '',         {},             True,       ''),     '  profile /foo flags=(complain) {'),
+        (('/foo',    True,         1,     'complain', '',         {},             True,       ''),     '  profile /foo flags=(complain) {'),
+        (('/foo',    False,        1,     'complain', '',         {},             False,      '# x'),  '  /foo flags=(complain) { # x'),
+        (('/foo',    True,         1,     None,       '',         {},             False,      '# x'),  '  profile /foo { # x'),
+        (('/foo',    False,        1,     None,       '',         {},             True,       '# x'),  '  profile /foo { # x'),
+        (('/foo',    True,         1,     'complain', '',         {},             True,       '# x'),  '  profile /foo flags=(complain) { # x'),
     )
 
     def _run_test(self, params, expected):
@@ -88,8 +88,10 @@ class AaTest_get_header_01(AATest):
         ({'name': '/foo', 'depth': 1,                          'flags': 'complain'},                                              '  /foo flags=(complain) {'),
         ({'name': '/foo', 'depth': 1,                          'flags': 'complain', 'profile_keyword': True},                     '  profile /foo flags=(complain) {'),
         ({'name': '/foo',                                      'flags': 'complain'},                                              '/foo flags=(complain) {'),
-        ({'name': '/foo',            'xattrs': 'user.foo=bar', 'flags': 'complain'},                                              '/foo xattrs=(user.foo=bar) flags=(complain) {'),
-        ({'name': '/foo',            'xattrs': 'user.foo=bar',                                             'embedded_hat': True}, 'profile /foo xattrs=(user.foo=bar) {'),
+        ({'name': '/foo',            'xattrs': {'user.foo': 'bar'}, 'flags': 'complain'},                                              '/foo xattrs=(user.foo=bar) flags=(complain) {'),
+        ({'name': '/foo',            'xattrs': {'user.foo': 'bar'},                                             'embedded_hat': True}, 'profile /foo xattrs=(user.foo=bar) {'),
+        ({'name': '/foo',            'xattrs': {'user.foo': None},                                             'embedded_hat': True}, 'profile /foo xattrs=(user.foo) {'),
+        ({'name': '/foo',            'xattrs': {'user.foo': None, 'user.bar': None},                                             'embedded_hat': True}, 'profile /foo xattrs=(user.bar user.foo) {'),
     )
 
     def _run_test(self, params, expected):
@@ -178,6 +180,7 @@ class TestSetInvalid(AATest):
         (('attachment',      None),  AppArmorBug),
         (('filename',        True),  AppArmorBug),  # expects string or None
         (('allow',           None),  AppArmorBug),  # doesn't allow overwriting at all
+        (('xattrs',          0),     AppArmorBug),  # Invalid type
     )
 
     def _run_test(self, params, expected):
@@ -196,7 +199,7 @@ class AaTest_repr(AATest):
     def testRepr(self):
         prof_storage = ProfileStorage('foo', 'hat', 'TEST')
         prof_storage['name'] = 'foo'
-        prof_storage['xattrs'] = 'user.bar=bar'
+        prof_storage['xattrs'] = {'user.bar': 'bar'}
         prof_storage['capability'].add(CapabilityRule('dac_override'))
 
         self.assertEqual(str(prof_storage), '\n<ProfileStorage>\nprofile foo xattrs=(user.bar=bar) {\n  capability dac_override,\n\n}\n</ProfileStorage>\n')
@@ -205,15 +208,21 @@ class AaTest_repr(AATest):
 class AaTest_parse_profile_start(AATest):
     tests = (
         # profile start line                                    profile  hat     parent     name                       profile                 hat                attachment   xattrs                     flags       pps_set_hat_external
-        (('/foo {',                                             None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     '',                        None,       False)),
-        (('/foo (complain) {',                                  None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     '',                        'complain', False)),
-        (('profile foo /foo {',                                 None,    None), ('',        'foo',                     'foo',                  'foo',                  '/foo', '',                        None,       False)),  # named profile
-        (('profile /foo {',                                     '/bar',  None), ('/bar',    '/foo',                    '/bar',                 '/foo',                 '',     '',                        None,       False)),  # child profile
-        (('/foo//bar {',                                        None,    None), ('/foo',    '/foo//bar',               '/foo',                 'bar',                  '',     '',                        None,       True)),   # external hat
-        (('profile "/foo" (complain) {',                        None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     '',                        'complain', False)),
-        (('profile "/foo" xattrs=(user.bar=bar) {',             None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     'user.bar=bar',            None,       False)),
-        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     'user.bar=bar user.foo=*', None,       False)),
-        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,    None), ('',        '/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', '/usr/bin/xattrs-test', '',     'myvalue="foo.bar"',       None,       False)),
+        (('/foo {',                                             None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {},                        None,       False)),
+        (('/foo (complain) {',                                  None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {},                        'complain', False)),
+        (('profile foo /foo {',                                 None,    None), ('',        'foo',                     'foo',                  'foo',                  '/foo', {},                        None,       False)),  # named profile
+        (('profile /foo {',                                     '/bar',  None), ('/bar',    '/foo',                    '/bar',                 '/foo',                 '',     {},                        None,       False)),  # child profile
+        (('profile /foo xattrs=() {',                           '/bar',  None), ('/bar',    '/foo',                    '/bar',                 '/foo',                 '',     {},                        None,       False)),
+        (('/foo//bar {',                                        None,    None), ('/foo',    '/foo//bar',               '/foo',                 'bar',                  '',     {},                        None,       True)),   # external hat
+        (('profile "/foo" (complain) {',                        None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {},                        'complain', False)),
+        (('profile "/foo" xattrs=() {',                         None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {},                        None,       False)),
+        (('profile "/foo" xattrs=(user.bar) {',                 None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {'user.bar': None},        None,       False)),
+        (('profile "/foo" xattrs=(user.foo user.bar) {',        None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {'user.bar': None, 'user.foo': None},
+                                                                                                                                                                                                          None,       False)),  # noqa: E127
+        (('profile "/foo" xattrs=(user.bar=bar) {',             None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {'user.bar': 'bar'},       None,       False)),
+        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,    None), ('',        '/foo',                    '/foo',                 '/foo',                 '',     {'user.bar': 'bar', 'user.foo': '*'},
+                                                                                                                                                                                                          None,       False)),  # noqa: E127
+        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,    None), ('',        '/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', '/usr/bin/xattrs-test', '',     {'myvalue': '"foo.bar"'},  None,       False)),
     )
 
     def _run_test(self, params, expected):

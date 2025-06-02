@@ -1,0 +1,155 @@
+#! /usr/bin/python3
+# ----------------------------------------------------------------------
+#    Copyright (C) 2025 Maxime Bélair <maxime.belair@canonical.com>
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+# ----------------------------------------------------------------------
+#
+
+import argparse
+import glob
+import re
+import json
+import sys
+import os
+
+from apparmor import aa
+from apparmor.translations import init_translation
+from apparmor.regex import expand_braces, resolve_variables
+
+_ = init_translation()
+
+MAX_RECURSION = 10
+
+
+def has_matching_file(pattern, xattrs=None):
+    for p in expand_braces(pattern):
+        for path in glob.iglob(p, recursive=True):
+            if os.path.realpath(path) != os.path.abspath(path):  # remove symlinks
+                continue
+            if not xattrs or all(os.getxattr(path, name) == val for name, val in xattrs.items()):
+                return path
+    return None
+
+
+def display_profile_text(used, unused, show_matching_path):
+    if used:
+        print(_('Used profiles:'))
+        for (name, attach, path, match) in used:
+            print(_('  Profile {} for {} ({}) {}').format(name, attach, path, ('→ ' + match) if show_matching_path else ''))
+    if unused:
+        print(_('Unused profiles:'))
+        for (name, attach, path, match) in unused:
+            print(_('  Profile {} for {} ({}) ').format(name, attach, path))
+
+
+def profiles_to_json(profiles):
+    result = []
+    for profile_name, attach, path, matching_path in profiles:
+        entry = {'name': profile_name, 'attach': attach, 'path': path}
+        if matching_path:
+            entry['matching_path'] = matching_path
+        result.append(entry)
+    return result
+
+
+def display_profile_json(used, unused):
+    profiles = {}
+    profiles['version'] = 1  # JSON format version - increase if you change the json structure
+    if used:
+        profiles['used'] = profiles_to_json(used)
+    if unused:
+        profiles['unused'] = profiles_to_json(unused)
+
+    print(json.dumps(profiles, indent=2))
+
+
+def filter_profile(path, profile_name, attach, prof_filter):
+    if prof_filter['flags'] and not prof_filter['flags'].match(aa.active_profiles.profiles[profile_name].data['flags'] or ''):
+        return False
+    if prof_filter['name'] and not prof_filter['name'].match(profile_name or ''):
+        return False
+    if prof_filter['attach'] and not prof_filter['attach'].match(attach or ''):
+        return False
+    if prof_filter['path'] and not prof_filter['path'].match(path or ''):
+        return False
+
+    return True
+
+
+def get_used_profiles(args, prof_filter):
+    aa.init_aa(confdir=args.configdir or os.getenv('__AA_CONFDIR'), profiledir=args.dir)
+    aa.read_profiles()
+    used = []
+    unused = []
+
+    for a, v in aa.active_profiles.attachments.items():
+        filename = v['f']
+        profile_name = v['p']
+        if not filter_profile(filename, profile_name, a, prof_filter):
+            continue
+
+        var_dict = aa.active_profiles.get_all_merged_variables(filename, aa.include_list_recursive(aa.active_profiles.files[filename], True))
+        resolved = resolve_variables(a, var_dict)
+        matching_path = None
+        for entry in resolved:
+            matching_path = has_matching_file(entry)
+            if matching_path:
+                break
+
+        if matching_path and args.show_type != 'unused':
+            used.append((profile_name, a, filename, matching_path))
+        if not matching_path and args.show_type != 'used':
+            unused.append((profile_name, a, filename, matching_path))
+
+    return used, unused
+
+
+def main():
+    parser = argparse.ArgumentParser(description=_('Check which profiles are used'))
+    parser.add_argument('-s', '--show-type', type=str, default='all', choices=['all', 'used', 'unused'], help=_('Type of profiles to show'))
+    parser.add_argument('-j', '--json', action='store_true', help=_('Output in JSON'))
+    parser.add_argument('-d', '--dir', type=str, help=_('Path to profiles'))
+    parser.add_argument('--show-matching-path', action='store_true', help=_('Show the path of a file matching the profile'))
+    parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
+
+    filter_group = parser.add_argument_group(_('Filtering options'),
+                                             description=(_('Filters are used to reduce the output of information to only '
+                                                            'those entries that will match the filter. Filters use Python\'s regular '
+                                                            'expression syntax.')))
+    filter_group.add_argument('--filter.flags', dest='filter_flags', metavar='FLAGS', help=_('Filter by flags'))
+    filter_group.add_argument('--filter.profile_name', dest='filter_name', metavar='PROFILE_NAME', help=_('Filter by profile name'))
+    filter_group.add_argument('--filter.profile_attach', dest='filter_attach', metavar='PROFILE_ATTACH', help=_('Filter by profile attachment'))
+    filter_group.add_argument('--filter.profile_path', dest='filter_path', metavar='PROFILE_PATH', help=_('Filter by profile path'))
+
+    # If not a TTY then assume running in test mode and fix output width
+    if not sys.stdout.isatty():
+        parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=80)
+
+    args = parser.parse_args()
+
+    prof_filter = {
+        'flags':    re.compile(args.filter_flags) if args.filter_flags else None,
+        'name':     re.compile(args.filter_name) if args.filter_name else None,
+        'attach':   re.compile(args.filter_attach) if args.filter_attach else None,
+        'path':     re.compile(args.filter_path) if args.filter_path else None,
+    }
+
+    used, unused = get_used_profiles(args, prof_filter)
+
+    if args.json:
+        display_profile_json(used, unused)
+    else:
+        display_profile_text(used, unused, args.show_matching_path)
+
+
+if __name__ == '__main__':
+    main()

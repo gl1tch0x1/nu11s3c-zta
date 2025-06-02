@@ -552,7 +552,7 @@ class AaTest_parse_profile_data(AATest):
         self.assertEqual(prof['/foo']['name'], '/foo')
         self.assertEqual(prof['/foo']['filename'], 'somefile')
         self.assertEqual(prof['/foo']['flags'], None)
-        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar')
+        self.assertEqual(prof['/foo']['xattrs'], {'user.bar': 'bar'})
 
     def test_parse_xattrs_02(self):
         prof = parse_profile_data('/foo xattrs=(user.bar=bar user.foo=*) {\n}\n'.split(), 'somefile', False, False)
@@ -561,7 +561,7 @@ class AaTest_parse_profile_data(AATest):
         self.assertEqual(prof['/foo']['name'], '/foo')
         self.assertEqual(prof['/foo']['filename'], 'somefile')
         self.assertEqual(prof['/foo']['flags'], None)
-        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar user.foo=*')
+        self.assertEqual(prof['/foo']['xattrs'], {'user.bar': 'bar', 'user.foo': '*'})
 
     def test_parse_xattrs_03(self):
         d = '/foo xattrs=(user.bar=bar) flags=(complain) {\n}\n'
@@ -571,7 +571,7 @@ class AaTest_parse_profile_data(AATest):
         self.assertEqual(prof['/foo']['name'], '/foo')
         self.assertEqual(prof['/foo']['filename'], 'somefile')
         self.assertEqual(prof['/foo']['flags'], 'complain')
-        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar')
+        self.assertEqual(prof['/foo']['xattrs'], {'user.bar': 'bar'})
 
     def test_parse_xattrs_04(self):
         with self.assertRaises(AppArmorException):

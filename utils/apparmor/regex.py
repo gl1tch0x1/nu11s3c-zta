@@ -14,6 +14,7 @@
 # ----------------------------------------------------------------------
 
 import re
+import itertools
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.translations import init_translation
@@ -27,11 +28,15 @@ RE_COMMA_EOL = r'\s*,' + RE_EOL  # optional whitespace, comma + RE_EOL
 
 RE_PROFILE_NAME = r'(?P<%s>(\S+|"[^"]+"))'  # string without spaces, or quoted string. %s is the match group name
 RE_PATH = r'/\S*|"/[^"]*"'  # filename (starting with '/') without spaces, or quoted filename.
+RE_VAR = r'@{[^}\s]+}'
+RE_DICT_ENTRY = r'\s*(?P<key>[^,\s=]+)(?:=(?P<value>[^,\s=]+))?\s*'
 RE_PROFILE_PATH = '(?P<%s>(' + RE_PATH + '))'  # quoted or unquoted filename. %s is the match group name
-RE_PROFILE_PATH_OR_VAR = '(?P<%s>(' + RE_PATH + r'|@{\S+}\S*|"@{\S+}[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
+RE_PROFILE_PATH_OR_VAR = '(?P<%s>(' + RE_PATH + '|' + RE_VAR + r'\S*|"' + RE_VAR + '[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
 RE_SAFE_OR_UNSAFE = '(?P<execmode>(safe|unsafe))'
-RE_XATTRS = r'(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+(=[^)=]+)?\s?)+)\)\s*)?'
+RE_XATTRS = r'(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+(=[^)=]+)?\s?)*)\)\s*)?'
 RE_FLAGS = r'(\s+(flags\s*=\s*)?\((?P<flags>[^)]+)\))?'
+
+RE_VARIABLE = re.compile(RE_VAR)
 
 RE_PROFILE_END = re.compile(r'^\s*\}' + RE_EOL)
 RE_PROFILE_ALL = re.compile(RE_PRIORITY_AUDIT_DENY + r'all' + RE_COMMA_EOL)
@@ -55,6 +60,8 @@ RE_PROFILE_UNIX = re.compile(RE_PRIORITY_AUDIT_DENY + r'(unix\s*,|unix(?P<detail
 RE_PROFILE_USERNS = re.compile(RE_PRIORITY_AUDIT_DENY + r'(userns\s*,|userns(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_MQUEUE = re.compile(RE_PRIORITY_AUDIT_DENY + r'(mqueue\s*,|mqueue(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_IO_URING = re.compile(RE_PRIORITY_AUDIT_DENY + r'(io_uring\s*,|io_uring(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
+
+RE_METADATA_LOGPROF_SUGGEST = re.compile(r'^\s*#\s*LOGPROF-SUGGEST\s*:\s*(?P<suggest>.*)$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -162,6 +169,10 @@ def parse_profile_start_line(line, filename):
     else:
         result['profile'] = result['namedprofile']
         result['profile_keyword'] = True
+    if 'xattrs' in result:
+        result['xattrs'] = re_parse_dict(result['xattrs'])
+    else:
+        result['xattrs'] = {}
 
     return result
 
@@ -235,6 +246,30 @@ def re_match_include(line):
     return None
 
 
+def re_parse_dict(raw):
+    """returns a dict where entries are comma or space separated"""
+    result = {}
+    if not raw:
+        return result
+
+    for key, value in re.findall(RE_DICT_ENTRY, raw):
+        if value == '':
+            value = None
+        result[key] = value
+
+    return result
+
+
+def re_print_dict(d):
+    parts = []
+    for k, v in sorted(d.items()):
+        if v:
+            parts.append("{}={}".format(k, v))
+        else:
+            parts.append(k)
+    return " ".join(parts)
+
+
 def strip_parenthesis(data):
     """strips parenthesis from the given string and returns the strip()ped result.
        The parenthesis must be the first and last char, otherwise they won't be removed.
@@ -251,3 +286,93 @@ def strip_quotes(data):
         return data[1:-1]
     else:
         return data
+
+
+def expand_var(var, var_dict, seen_vars):
+    if var in seen_vars:
+        raise AppArmorException(_('Circular dependency detected for variable {}').format(var))
+
+    if var not in var_dict:
+        raise AppArmorException(_('Trying to reference non-existing variable {}').format(var))
+
+    resolved = []
+    for val in var_dict[var]:
+        resolved.extend(expand_string(val, var_dict, seen_vars | {var}))
+    return resolved
+
+
+def expand_string(s, var_dict, seen_vars):
+
+    matches = list(RE_VARIABLE.finditer(s))
+    if not matches:
+        return [s]
+
+    parts = []
+    last_idx = 0
+    for match in matches:
+        start, end = match.span()
+        if start > last_idx:
+            parts.append([s[last_idx:start]])
+
+        var_name = match.group(0)
+        parts.append(expand_var(var_name, var_dict, seen_vars))
+        last_idx = end
+
+    if last_idx < len(s):
+        parts.append([s[last_idx:]])
+
+    return [''.join(p) for p in itertools.product(*parts)]
+
+
+def resolve_variables(s, var_dict):
+    return expand_string(s, var_dict, set())
+
+
+# This function could be replaced by braceexpand.braceexpand
+# It exists to avoid relying on an external python package.
+def expand_braces(s):
+    i = s.find('{')
+    if i == -1:
+        if '}' in s:
+            raise AppArmorException('Unbalanced braces in pattern {}'.format(s))
+        return [s]
+
+    level = 0
+    for j in range(i, len(s)):
+        if s[j] == '{':
+            level += 1
+        elif s[j] == '}':
+            level -= 1
+            if level == 0:
+                break
+    else:
+        raise AppArmorException('Unbalanced braces in pattern {}'.format(s))
+
+    prefix = s[:i]
+    group = s[i + 1:j]
+    suffix = s[j + 1:]
+
+    # Split group on commas at the top level (i.e. not inside nested braces)
+    alts = []
+    curr = ''
+    nested = 0
+    for char in group:
+        if char == ',' and nested == 0:
+            alts.append(curr)
+            curr = ""
+        else:
+            if char == '{':
+                nested += 1
+            elif char == '}':
+                nested -= 1
+            curr += char
+    alts.append(curr)
+
+    # Recursively combine prefix, each alternative, and suffix
+    results = []
+    for alt in alts:
+        for expansion in expand_braces(prefix + alt + suffix):
+            results.append(expansion)
+    if len(results) <= 1:
+        raise AppArmorException('Braces should provide at least two alternatives, found {}: {}'.format(len(results), s))
+    return results
