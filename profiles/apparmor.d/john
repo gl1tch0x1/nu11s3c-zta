@@ -5,13 +5,12 @@ profile john /usr/sbin/john {
   include <abstractions/base>
   include <abstractions/consoles>
   include <abstractions/nameservice>
+  include <abstractions/private-files-strict>
   include if exists <local/john>
 
   /usr/sbin/john mr,
 
   /** r,
-
-  deny @{HOME}/.* rwl,
 
   @{HOME}/.john/ rw,
   @{HOME}/.john/*.log rwk,
