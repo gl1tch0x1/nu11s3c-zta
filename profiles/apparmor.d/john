@@ -12,8 +12,8 @@ profile john /usr/sbin/john {
 
   /** r,
 
-  @{HOME}/.john/ rw,
-  @{HOME}/.john/*.log rwk,
-  @{HOME}/.john/*.pot rwk,
-  @{HOME}/.john/*.rec rwk,
+  owner @{HOME}/.john/ rw,
+  owner @{HOME}/.john/*.log rwk,
+  owner @{HOME}/.john/*.pot rwk,
+  owner @{HOME}/.john/*.rec rwk,
 }
