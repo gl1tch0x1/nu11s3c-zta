@@ -12,7 +12,9 @@ abi <abi/4.0>,
 
 include <tunables/global>
 
-profile hwctl /usr/bin/hwctl {
+# provide backwards compat with older parsers that don't support @{exec_path}
+@{exec_path}=/usr/bin/hwctl
+profile hwctl @{exec_path} {
   include <abstractions/base>
   include <abstractions/nameservice-strict>
   include <abstractions/openssl>
@@ -38,10 +40,15 @@ profile hwctl /usr/bin/hwctl {
   /usr/bin/kmod   cx,
   /etc/os-release r,
 
+  # note @{exec_path} not used for this attachment for backwards compat
+  # reasons. Older parsers do not allow us to embed a variable declaration
+  # to use the trick we are using above
   profile kmod /usr/bin/kmod {
     include <abstractions/base>
 
-    @{exec_path}              r,
+    # old parsers do not support defining a variable outside of the
+    # preamble for backward compat do not use @{exec_path} here
+    /usr/bin/kmod             r,
     @{PROC}/{cmdline,modules} r,
     @{sys}/module/**          r,  # for fetching kernel modules
   }
