@@ -37,7 +37,8 @@ flags_keywords = list(flags_bind_mount) + list(flags_change_propagation) + [
     'ro', 'read-only', 'rw', 'suid', 'nosuid', 'dev', 'nodev', 'exec', 'noexec', 'sync', 'async', 'mand',
     'nomand', 'dirsync', 'symfollow', 'nosymfollow', 'atime', 'noatime', 'diratime', 'nodiratime', 'move', 'M',
     'verbose', 'silent', 'loud', 'acl', 'noacl', 'relatime', 'norelatime', 'iversion', 'noiversion', 'strictatime',
-    'nostrictatime', 'lazytime', 'nolazytime', 'user', 'nouser', 'r', 'w', '([A-Za-z0-9])',
+    'nostrictatime', 'lazytime', 'nolazytime', 'user', 'nouser', 'r', 'w',
+    '[A-Za-z0-9-]+',  # as long as the parser uses a hardcoded options list, this only helps to print a better error message on unknown mount options
 ]
 join_valid_flags = '|'.join(flags_keywords)
 
