@@ -23,17 +23,20 @@ profile lsblk /usr/bin/lsblk {
   @{sys}/class/block/ r,
   @{sys}/dev/block/ r,
 
-  @{sys}/devices/pci[0-9]*:[0-9]*/** r,
+  @{sys}/devices/pci@{int}:@{int}/** r,
   @{sys}/devices/virtual/** r,
   @{sys}/devices/platform/** r,
+
+  # Needed for Xen PVH guests
+  @{sys}/devices/vbd-@{int}/block/** r,
 
   # Needed for disks over network e.g. Hyper-V VMs (including Azure), IBM Power, ...
   @{sys}/devices/**/host@{int}/** r,
 
   # Needed for channel subsystem for IBM Z
-  @{sys}/devices/css[0-9]/** r,
+  @{sys}/devices/css@{int}/** r,
 
-  /dev/sr[0-9]* rk,
+  /dev/sr@{int} rk,
 
   @{run}/udev/data/** r,
 
