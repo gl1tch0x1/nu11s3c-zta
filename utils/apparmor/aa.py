@@ -1477,15 +1477,9 @@ def set_logfile(filename):
 
 
 def do_logprof_pass(logmark='', out_dir=None):
-    # set up variables for this pass
-    global active_profiles
-#     changed = dict()
-
     aaui.UI_Info(_('Reading log entries from %s.') % logfile)
 
     load_sev_db()
-    # print(pid)
-    # print(active_profiles)
 
     log_reader = apparmor.logparser.ReadLog(logfile, active_profiles, profile_dir)
     hashlog = log_reader.read_log(logmark)
