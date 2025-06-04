@@ -32,12 +32,11 @@ flags_change_propagation = {
     'make-rslave'
 }
 # keep in sync with parser/mount.cc mnt_opts_table!
-# ordering is relevant here due to re.finditer - if r is present in the list before rw, then options will match r, not rw
 flags_keywords = list(flags_bind_mount) + list(flags_change_propagation) + [
-    'ro', 'read-only', 'rw', 'suid', 'nosuid', 'dev', 'nodev', 'exec', 'noexec', 'sync', 'async', 'mand',
+    'ro', 'r', 'read-only', 'rw', 'w', 'suid', 'nosuid', 'dev', 'nodev', 'exec', 'noexec', 'sync', 'async', 'mand',
     'nomand', 'dirsync', 'symfollow', 'nosymfollow', 'atime', 'noatime', 'diratime', 'nodiratime', 'move', 'M',
     'verbose', 'silent', 'loud', 'acl', 'noacl', 'relatime', 'norelatime', 'iversion', 'noiversion', 'strictatime',
-    'nostrictatime', 'lazytime', 'nolazytime', 'user', 'nouser', 'r', 'w',
+    'nostrictatime', 'lazytime', 'nolazytime', 'user', 'nouser',
     '[A-Za-z0-9-]+',  # as long as the parser uses a hardcoded options list, this only helps to print a better error message on unknown mount options
 ]
 join_valid_flags = '|'.join(flags_keywords)
@@ -54,7 +53,7 @@ fs_type_pattern = r'\b(?P<fstype_or_vfstype>fstype|vfstype)\b\s*(?P<fstype_equal
 
 option_pattern = r'\s*(\boption(s?)\b\s*(?P<options_equals_or_in>=|in)\s*'\
     r'(?P<options>\(\s*(' + join_valid_flags + r')(' + sep + r'(' + join_valid_flags + r'))*\s*\)|' \
-    r'(\s*' + join_valid_flags + r')'\
+    r'(\s*' + join_valid_flags + r')(?=(\s|$))'\
     r'))'
 
 # allow any order of fstype and options
