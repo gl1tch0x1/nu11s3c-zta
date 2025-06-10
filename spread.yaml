@@ -41,12 +41,14 @@ backends:
                 # to the Ubuntu cloud images that have the rootfs as the first
                 # partition.
                 exec image-garden allocate "$SPREAD_SYSTEM"."$ARCH" \
+                  -usb -usbdevice keyboard -usbdevice mouse \
                   -kernel bzImage \
                   -append 'root=/dev/sda1 ro console=tty1 console=ttyS0'
             fi
             # Ask image garden to allocate the system and relay the result back
             # to spread as either success of failure.
-            exec image-garden allocate "$SPREAD_SYSTEM"."$ARCH"
+            exec image-garden allocate "$SPREAD_SYSTEM"."$ARCH" \
+                -usb -usbdevice keyboard -usbdevice mouse \
         discard: |
             # See above for an explanation.
             if [ -n "${SPREAD_HOST_PATH-}" ]; then
