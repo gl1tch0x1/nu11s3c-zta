@@ -34,8 +34,12 @@ profile fusermount3 /usr/bin/fusermount3 {
 
   /dev/fuse rw,
 
+  # needed since libfuse 3.17.1-rc0 (LP: #2111845)
+  /usr/bin/mount ix,
+  /usr/bin/umount ix,
+
   @{etc_ro}/fuse.conf r,
-  @{PROC}/@{pid}/mounts r,
+  @{PROC}/@{pid}/{mounts,mountinfo} r,
 
   @{exec_path} mr,
 
