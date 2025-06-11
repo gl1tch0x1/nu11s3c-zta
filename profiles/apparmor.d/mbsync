@@ -26,7 +26,7 @@ profile mbsync /usr/bin/mbsync {
   network netlink raw,
 
   @{etc_ro}/gss/mech.d/ r,
-  /usr/bin/mbsync r,
+  /usr/bin/mbsync mr,
   owner @{HOME}/.mbsyncrc r,
   owner @{HOME}/Mail/**/ rw,
   owner @{HOME}/Mail/**/.mbsyncstate rw,
