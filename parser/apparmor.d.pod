@@ -2182,7 +2182,6 @@ An example AppArmor profile:
   	  /lib/lib*.so*       r,
   	  /proc/[0-9]**       r,
   	  /usr/lib/**         r,
-  	  /tmp/foo.pid        wr,
   	  /tmp/foo.*          lrw,
 	  @{HOME}/.foo_file  rw,
 	  /usr/bin/baz        Cx -> baz,
