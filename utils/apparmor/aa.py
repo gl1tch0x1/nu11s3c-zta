@@ -1604,7 +1604,7 @@ def update_profiles(ui_msg=False, skip_profiles=()):
         print(_("Error while loading profiles: {}").format(e))
 
 
-def read_profiles(ui_msg=False, skip_profiles=(), skip_disabled=True):
+def read_profiles(ui_msg=False, skip_profiles=(), skip_disabled=True, skip_perm_error=False):
     # we'll read all profiles from disk, so reset the storage first (autodep() might have created/stored
     # a profile already, which would cause a 'Conflicting profile' error in attach_profile_data())
     #
@@ -1619,6 +1619,9 @@ def read_profiles(ui_msg=False, skip_profiles=(), skip_disabled=True):
     try:
         os.listdir(profile_dir)
     except (OSError, TypeError):
+        if skip_perm_error:
+            aaui.UI_Info(_("WARNING: Can't read AppArmor profiles in %s") % profile_dir)
+            return
         fatal_error(_("Can't read AppArmor profiles in %s") % profile_dir)
 
     for file in os.listdir(profile_dir):
