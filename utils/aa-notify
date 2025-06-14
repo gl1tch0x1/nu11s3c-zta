@@ -123,8 +123,8 @@ def is_event_in_filter(event, filters):
     return True
 
 
-def daemonize():
-    """Run the notification daemon in the background."""
+def daemonize(foreground):
+    """Run the notification daemon in the background or foreground."""
     # Kill other instances of aa-notify if already running
     for process in psutil.process_iter():
         # Find the process that has the same name as this script, e.g. aa-notify.py
@@ -132,8 +132,13 @@ def daemonize():
             print(_('Killing old daemon (PID {})...').format(process.pid))
             os.kill(process.pid, 15)
 
-    # Spawn/fork into the background and stay running
-    newpid = os.fork()
+    if foreground:
+        # Stay in the foreground
+        newpid = 0
+    else:
+        # Spawn/fork into the background and stay running
+        newpid = os.fork()
+
     if newpid == 0:
 
         # Follow the logfile and stream notifications
@@ -835,6 +840,7 @@ def main():
     parser.add_argument('-u', '--user', type=str, help=_('user to drop privileges to when not using sudo'))
     parser.add_argument('-w', '--wait', type=int, metavar=('NUM'), help=_('wait NUM seconds before displaying notifications (with -p)'))
     parser.add_argument('-m', '--merge-notifications', action='store_true', help=_('Merge notification for improved readability (with -p)'))
+    parser.add_argument('-F', '--foreground', action='store_true', help=_('Do not fork to the background'))
     parser.add_argument('--prompt-filter', type=str, metavar=('PF'), help=_('kind of operations which display a popup prompt'))
     parser.add_argument('--debug', action='store_true', help=_('debug mode'))
     parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
@@ -1087,10 +1093,10 @@ def main():
         rl = ReadLog('', '', '')
 
         # Initialize the list of profiles for can_allow_rule
-        aa.read_profiles()
+        aa.read_profiles(skip_perm_error=True)
 
         drop_privileges()
-        daemonize()
+        daemonize(args.foreground)
         raise_privileges()
 
         if args.merge_notifications:
@@ -1139,6 +1145,11 @@ def main():
             # @TODO Plan to catch PermissionError here or..?
             for (event, message) in notify_about_new_entries(logfile, filters, args.wait):
                 ev = rl.parse_record(event)
+
+                # "parse_record" may return None if the event was invalid or misformed.
+                # Catch it here to prevent any errors.
+                if ev is None:
+                    continue
 
                 # @TODO redo special behaviours with a more regular function
                 # We ignore capability denials for binaries in ignore_denied_capability

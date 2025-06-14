@@ -171,7 +171,11 @@ class ReadLog:
             return None
 
     def parse_record(self, event):
-        """Parse the record from LibAppArmor into key value pairs"""
+        """
+        Parse the record from LibAppArmor into key value pairs
+
+        If the event is invalid or misformed, this function may return 'None'.
+        """
         ev = dict()
         ev['resource'] = event.info
         ev['active_hat'] = event.active_hat
