@@ -182,7 +182,11 @@ class InvalidChangeProfileInit(AATest):
 
     def test_missing_params_2(self):
         with self.assertRaises(TypeError):
-            ChangeProfileRule('inet')
+            ChangeProfileRule(None)
+
+    def test_missing_params_3(self):
+        with self.assertRaises(TypeError):
+            ChangeProfileRule(None, ChangeProfileRule.ALL)
 
 
 class InvalidChangeProfileTest(AATest):
