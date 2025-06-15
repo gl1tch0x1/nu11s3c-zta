@@ -54,18 +54,6 @@ class AATest(unittest.TestCase):
     tmpdir = None
 
 
-class AAParseTest(unittest.TestCase):
-    parse_function = None
-
-    def _test_parse_rule(self, rule):
-        self.assertIsNot(self.parse_function, 'Test class did not set a parse_function')
-        parsed = self.parse_function(rule)
-        self.assertEqual(
-            rule, parsed.serialize(),
-            'parse object {} returned "{}", expected "{}"'.format(
-                self.parse_function.__doc__, parsed.serialize(), rule))
-
-
 def setup_all_loops(module_name):
     """call setup_tests_loop() for each class in module_name"""
     for name, obj in inspect.getmembers(sys.modules[module_name]):
@@ -90,19 +78,6 @@ def setup_tests_loop(test_class):
             self._run_test(test_data, expected)
 
         stub_test.__doc__ = "test '{}'".format(test_data)
-        setattr(test_class, 'test_{}'.format(i), stub_test)
-
-
-def setup_regex_tests(test_class):
-    """Create tests in test_class using test_class.tests and AAParseTest._test_parse_rule()
-
-    test_class.tests should be tuples of (line, description)
-    """
-    for (i, (line, desc)) in enumerate(test_class.tests):
-        def stub_test(self, line=line):
-            self._test_parse_rule(line)
-
-        stub_test.__doc__ = "test '{}': {}".format(line, desc)
         setattr(test_class, 'test_{}'.format(i), stub_test)
 
 
