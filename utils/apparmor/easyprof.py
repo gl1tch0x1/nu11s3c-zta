@@ -200,12 +200,7 @@ def get_directory_contents(path):
     if not valid_path(path):
         return None
 
-    files = []
-    for f in glob.glob(path + "/*"):
-        files.append(f)
-
-    files.sort()
-    return files
+    return sorted(glob.glob(path + "/*"))
 
 
 def verify_policy(policy, exe, base=None, include=None):
