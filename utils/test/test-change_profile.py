@@ -85,6 +85,8 @@ class ChangeProfileTestParse(ChangeProfileTest):
 class ChangeProfileTestParseInvalid(ChangeProfileTest):
     tests = (
         # rule                              exception,         matches regex?
+        ('change_profile',                  (AppArmorException, False)),  # missing comma
+        ('dbus,',                           (AppArmorException, False)),  # not a change_profile rule
         ('change_profile -> ,',             (AppArmorException, False)),
         ('change_profile foo -> ,',         (AppArmorException, False)),
         ('change_profile notsafe,',         (AppArmorException, False)),
@@ -192,20 +194,6 @@ class InvalidChangeProfileInit(AATest):
 
 
 class InvalidChangeProfileTest(AATest):
-    def _check_invalid_rawrule(self, rawrule):
-        obj = None
-        self.assertFalse(ChangeProfileRule.match(rawrule))
-        with self.assertRaises(AppArmorException):
-            obj = ChangeProfileRule.create_instance(rawrule)
-
-        self.assertIsNone(obj, 'ChangeProfileRule handed back an object unexpectedly')
-
-    def test_invalid_net_missing_comma(self):
-        self._check_invalid_rawrule('change_profile')  # missing comma
-
-    def test_invalid_net_non_ChangeProfileRule(self):
-        self._check_invalid_rawrule('dbus,')  # not a change_profile rule
-
     def test_empty_net_data_1(self):
         obj = ChangeProfileRule(None, '/foo', '/bar')
         obj.execcond = ''
