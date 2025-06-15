@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ----------------------------------------------------------------------
-#    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2025 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -84,15 +84,17 @@ class ChangeProfileTestParse(ChangeProfileTest):
 
 class ChangeProfileTestParseInvalid(ChangeProfileTest):
     tests = (
-        ('change_profile -> ,',            AppArmorException),
-        ('change_profile foo -> ,',        AppArmorException),
-        ('change_profile notsafe,',        AppArmorException),
-        ('change_profile safety -> /bar,', AppArmorException),
+        # rule                              exception,         matches regex?
+        ('change_profile -> ,',             (AppArmorException, False)),
+        ('change_profile foo -> ,',         (AppArmorException, False)),
+        ('change_profile notsafe,',         (AppArmorException, False)),
+        ('change_profile safety -> /bar,',  (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertFalse(ChangeProfileRule.match(rawrule))
-        with self.assertRaises(expected):
+        exp_exception, matches_regex = expected
+        self.assertEqual(matches_regex, ChangeProfileRule.match(rawrule))  # does the invalid rules still match the main regex?
+        with self.assertRaises(exp_exception):
             ChangeProfileRule.create_instance(rawrule)
 
 
