@@ -80,12 +80,17 @@ class PtraceTestParseInvalid(PtraceTest):
         ('ptrace read bar,',      AppArmorException),
         ('ptrace read tracedby,', AppArmorException),
         ('ptrace peer=,',         AppArmorException),
+        ('priority=1042 ptrace,', AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(PtraceRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             PtraceRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            PtraceRule.create_instance('priority=a ptrace,')
 
 
 class PtraceTestParseFromLog(PtraceTest):
@@ -190,6 +195,14 @@ class InvalidPtraceInit(AATest):
     def test_missing_params_2(self):
         with self.assertRaises(TypeError):
             PtraceRule('r')
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            PtraceRule(PtraceRule.ALL, PtraceRule.ALL, priority=PtraceRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            PtraceRule(PtraceRule.ALL, PtraceRule.ALL, priority='invalid')
 
 
 class InvalidPtraceTest(AATest):

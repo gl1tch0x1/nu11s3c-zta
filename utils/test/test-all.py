@@ -48,6 +48,7 @@ class AllTestParse(AllTest):
         ('deny all, # comment',     exp(False, False, True,  ' # comment')),
         ('audit allow all,',        exp(True,  True,  False, '')),
         ('audit allow all,',        exp(True,  True,  False, '')),
+        ('priority=-1 all,',        exp(False, False, False, '')),
     )
 
     def _run_test(self, rawrule, expected):
@@ -69,6 +70,14 @@ class AllTestParseInvalid(AllTest):
         with self.assertRaises(expected):
             AllRule.create_instance(rawrule)
 
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            AllRule.create_instance('priority=a all,')
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            AllRule.create_instance('priority=1042 all,')
+
 
 # we won't ever support converting a log event to an 'all,' rule
 # class AllTestParseFromLog(AllTest):
@@ -83,6 +92,14 @@ class AllFromInit(AllTest):
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            AllRule(priority=AllRule)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            AllRule(priority='invalid')
 
 
 # no localvars -> no way to hand over invalid values, or to miss a required parameter

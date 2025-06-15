@@ -52,12 +52,17 @@ class IOUringTestParseInvalid(AATest):
         ('io_uring label=,',                  AppArmorException),
         ('io_uring invalidaccess label=foo,', AppArmorException),
         ('io_uring sqpoll label=,',           AppArmorException),
+        ('priority=1042 io_uring,',           AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(IOUringRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             IOUringRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            IOUringRule.create_instance('priority=a io_uring,')
 
     def test_parse_fail(self):
         with self.assertRaises(AppArmorException):
@@ -105,6 +110,14 @@ class InvalidIOUringInit(AATest):
     def test_missing_params2(self):
         with self.assertRaises(TypeError):
             IOUringRule('override_creds')
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            IOUringRule(IOUringRule.ALL, IOUringRule.ALL, priority=IOUringRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            IOUringRule(IOUringRule.ALL, IOUringRule.ALL, priority='invalid')
 
 
 class WriteIOUringTestAATest(AATest):

@@ -120,12 +120,17 @@ class DbusTestParseInvalid(DbusTest):
         ('dbus peer=,',                                     AppArmorException),
         ('dbus bus=session bind bus=system,',               AppArmorException),
         ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', AppArmorException),
+        ('priority=1042 dbus,',                             AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(DbusRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             DbusRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            DbusRule.create_instance('priority=a dbus,')
 
 
 class DbusTestParseFromLog(DbusTest):
@@ -274,6 +279,14 @@ class InvalidDbusInit(AATest):
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
             DbusRule(*params)
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            DbusRule(DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,  DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, priority=DbusRule.ALL)  # invalid priority ALL
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            DbusRule(DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,  DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, priority='invalid')  # invalid priority (text)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):

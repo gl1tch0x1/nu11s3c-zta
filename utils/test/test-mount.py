@@ -124,6 +124,7 @@ class MountTestParseInvalid(AATest):
         ('mount options=(),',        AppArmorException),
         ('mount option=(invalid),',  AppArmorException),
         ('mount option=(ext3ext4),', AppArmorException),
+        ('priority=-1042 umount,',   AppArmorException),
         ('mount fstype=({unclosed_regex),', AppArmorException),  # invalid AARE
         ('mount fstype=({closed}twice}),',  AppArmorException),  # invalid AARE
     )
@@ -136,6 +137,19 @@ class MountTestParseInvalid(AATest):
     def test_parse_fail(self):
         with self.assertRaises(AppArmorException):
             MountRule.create_instance('foo,')
+
+    def test_invalid_priority(self):
+        for keyword in ['mount', 'umount', 'unmount', 'remount']:
+            with self.assertRaises(AppArmorException):
+                MountRule.create_instance('priority=a %s,' % keyword)
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            MountRule('mount', MountRule.ALL, MountRule.ALL, MountRule.ALL, MountRule.ALL, priority=MountRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            MountRule('mount', MountRule.ALL, MountRule.ALL, MountRule.ALL, MountRule.ALL, priority='invalid')
 
     def test_diff_non_mountrule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))

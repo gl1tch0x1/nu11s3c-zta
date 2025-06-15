@@ -245,6 +245,8 @@ class CapabilityTestParseInvalid(AATest):
         # rule                           exception,         matches regex?
         ('capability',                  (AppArmorException, False)),  # missing comma
         ('network,',                    (AppArmorException, False)),  # not a capability rule
+        ('priority=1042 capability,',   (AppArmorException, True)),
+        ('priority=a capability,',      (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
@@ -285,6 +287,14 @@ class InvalidCapabilityTest(AATest):
     def test_wrong_type_for_cap(self):
         with self.assertRaises(AppArmorBug):
             CapabilityRule(dict())
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            CapabilityRule(CapabilityRule.ALL, priority=CapabilityRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            CapabilityRule(CapabilityRule.ALL, priority='invalid')
 
 
 class WriteCapabilityTest(AATest):

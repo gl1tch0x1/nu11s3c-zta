@@ -91,12 +91,17 @@ class PivotRootTestParseInvalid(PivotRootTest):
         ('pivot_root foo bar,',     AppArmorException),
         ('pivot_root oldroot= ,',   AppArmorException),
         ('pivot_root ->  ,',        AppArmorException),
+        ('priority=-1042 pivot_root,',  AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(PivotRootRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             PivotRootRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            PivotRootRule.create_instance('priority=a pivot_root,')
 
     def test_invalid_rule_name(self):
         self.assertFalse(PivotRootRule.match('pivot_rootbeer,'))
@@ -200,6 +205,14 @@ class InvalidPivotRootInit(AATest):
     def test_missing_params_3(self):
         with self.assertRaises(TypeError):
             PivotRootRule('/foo', '/bar')
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            PivotRootRule(PivotRootRule.ALL, PivotRootRule.ALL, PivotRootRule.ALL, priority=PivotRootRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            PivotRootRule(PivotRootRule.ALL, PivotRootRule.ALL, PivotRootRule.ALL, priority='invalid')
 
 
 class InvalidPivotRootTest(AATest):

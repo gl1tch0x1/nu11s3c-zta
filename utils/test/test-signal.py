@@ -84,12 +84,17 @@ class SignalTestParseInvalid(SignalTest):
         ('signal set=int set=,', AppArmorException),
         ('signal set=invalid,',  AppArmorException),
         ('signal peer=,',        AppArmorException),
+        ('priority=-1042 signal,',  AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(SignalRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             SignalRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            SignalRule.create_instance('priority=a signal,')
 
 
 class SignalTestParseFromLog(SignalTest):
@@ -203,6 +208,14 @@ class InvalidSignalInit(AATest):
     def test_missing_params_3(self):
         with self.assertRaises(TypeError):
             SignalRule('r', 'int')
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            SignalRule(SignalRule.ALL, SignalRule.ALL, priority=SignalRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            SignalRule(SignalRule.ALL, SignalRule.ALL, SignalRule.ALL, priority='invalid')
 
 
 class InvalidSignalTest(AATest):

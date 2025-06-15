@@ -69,6 +69,7 @@ class UnixTestParseInvalid(AATest):
     tests = (
         ('unix invalid,',   AppArmorException),
         ('unix (invalid),', AppArmorException),
+        ('priority=1042 unix,', AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
@@ -79,6 +80,18 @@ class UnixTestParseInvalid(AATest):
     def test_parse_fail(self):
         with self.assertRaises(AppArmorException):
             UnixRule.create_instance('foo,')
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            UnixRule.create_instance('priority=a unix,')
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            UnixRule(UnixRule.ALL, UnixRule.ALL, UnixRule.ALL, UnixRule.ALL,  False, False, False, '', priority=UnixRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            UnixRule(UnixRule.ALL, UnixRule.ALL, UnixRule.ALL, UnixRule.ALL,  False, False, False, '', priority='invalid')
 
     def test_invalid_key(self):
         with self.assertRaises(AppArmorException):
