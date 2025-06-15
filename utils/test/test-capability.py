@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ----------------------------------------------------------------------
-#    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2025 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -240,21 +240,21 @@ class CapabilityTest(AATest):
         })
 
 
+class CapabilityTestParseInvalid(AATest):
+    tests = (
+        # rule                           exception,         matches regex?
+        ('capability',                  (AppArmorException, False)),  # missing comma
+        ('network,',                    (AppArmorException, False)),  # not a capability rule
+    )
+
+    def _run_test(self, rawrule, expected):
+        exp_exception, matches_regex = expected
+        self.assertEqual(matches_regex, CapabilityRule.match(rawrule))  # does the invalid rules still match the main regex?
+        with self.assertRaises(exp_exception):
+            CapabilityRule.create_instance(rawrule)
+
+
 class InvalidCapabilityTest(AATest):
-    def _check_invalid_rawrule(self, rawrule):
-        obj = None
-        with self.assertRaises(AppArmorException):
-            obj = CapabilityRule.create_instance(rawrule)
-
-        self.assertFalse(CapabilityRule.match(rawrule))
-        self.assertIsNone(obj, 'CapbilityRule handed back an object unexpectedly')
-
-    def test_invalid_cap_missing_comma(self):
-        self._check_invalid_rawrule('capability')  # missing comma
-
-    def test_invalid_cap_non_CapabilityRule(self):
-        self._check_invalid_rawrule('network,')  # not a capability rule
-
     def test_empty_cap_set(self):
         obj = CapabilityRule('chown')
         obj.capability.clear()
