@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ----------------------------------------------------------------------
-#    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2025 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -84,15 +84,19 @@ class ChangeProfileTestParse(ChangeProfileTest):
 
 class ChangeProfileTestParseInvalid(ChangeProfileTest):
     tests = (
-        ('change_profile -> ,',            AppArmorException),
-        ('change_profile foo -> ,',        AppArmorException),
-        ('change_profile notsafe,',        AppArmorException),
-        ('change_profile safety -> /bar,', AppArmorException),
+        # rule                              exception,         matches regex?
+        ('change_profile',                  (AppArmorException, False)),  # missing comma
+        ('dbus,',                           (AppArmorException, False)),  # not a change_profile rule
+        ('change_profile -> ,',             (AppArmorException, False)),
+        ('change_profile foo -> ,',         (AppArmorException, False)),
+        ('change_profile notsafe,',         (AppArmorException, False)),
+        ('change_profile safety -> /bar,',  (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertFalse(ChangeProfileRule.match(rawrule))
-        with self.assertRaises(expected):
+        exp_exception, matches_regex = expected
+        self.assertEqual(matches_regex, ChangeProfileRule.match(rawrule))  # does the invalid rules still match the main regex?
+        with self.assertRaises(exp_exception):
             ChangeProfileRule.create_instance(rawrule)
 
 
@@ -182,24 +186,14 @@ class InvalidChangeProfileInit(AATest):
 
     def test_missing_params_2(self):
         with self.assertRaises(TypeError):
-            ChangeProfileRule('inet')
+            ChangeProfileRule(None)
+
+    def test_missing_params_3(self):
+        with self.assertRaises(TypeError):
+            ChangeProfileRule(None, ChangeProfileRule.ALL)
 
 
 class InvalidChangeProfileTest(AATest):
-    def _check_invalid_rawrule(self, rawrule):
-        obj = None
-        self.assertFalse(ChangeProfileRule.match(rawrule))
-        with self.assertRaises(AppArmorException):
-            obj = ChangeProfileRule.create_instance(rawrule)
-
-        self.assertIsNone(obj, 'ChangeProfileRule handed back an object unexpectedly')
-
-    def test_invalid_net_missing_comma(self):
-        self._check_invalid_rawrule('change_profile')  # missing comma
-
-    def test_invalid_net_non_ChangeProfileRule(self):
-        self._check_invalid_rawrule('dbus,')  # not a change_profile rule
-
     def test_empty_net_data_1(self):
         obj = ChangeProfileRule(None, '/foo', '/bar')
         obj.execcond = ''

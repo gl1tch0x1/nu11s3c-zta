@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2024 Canonical, Ltd.
+#    Copyright (C) 2025 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -123,6 +124,8 @@ class MountTestParseInvalid(AATest):
         ('mount options=(),',        AppArmorException),
         ('mount option=(invalid),',  AppArmorException),
         ('mount option=(ext3ext4),', AppArmorException),
+        ('mount fstype=({unclosed_regex),', AppArmorException),  # invalid AARE
+        ('mount fstype=({closed}twice}),',  AppArmorException),  # invalid AARE
     )
 
     def _run_test(self, rawrule, expected):
@@ -143,16 +146,6 @@ class MountTestParseInvalid(AATest):
     def test_diff_invalid_fstype_equals_or_in(self):
         with self.assertRaises(AppArmorBug):
             MountRule('mount', ('ext3', 'ext4'), MountRule.ALL, MountRule.ALL, MountRule.ALL)  # fstype[0] should be '=' or 'in'
-
-    def test_diff_invalid_fstype_aare(self):
-        tests = [
-            'mount fstype=({unclosed_regex),',
-            'mount fstype=({closed}twice}),',
-        ]
-
-        for t in tests:
-            with self.assertRaises(AppArmorException):
-                MountRule.create_instance(t)
 
     def test_diff_invalid_fstype_aare_2(self):
         fslists = [
