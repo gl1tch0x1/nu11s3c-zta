@@ -15,6 +15,8 @@ profile nvidia_modprobe {
   capability sys_admin,
 
   # Main executable
+  # Hardcode the path due to omission of attachment
+  /usr/bin/nvidia-modprobe mr,
 
   # Other executables
 
