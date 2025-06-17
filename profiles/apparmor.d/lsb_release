@@ -14,6 +14,9 @@ profile lsb_release {
   include <abstractions/python>
   include <abstractions/terminfo>
 
+  # Hardcode the path due to omission of attachment
+  /usr/bin/lsb_release r,
+
   owner @{PROC}/@{pid}/fd/ r,
 
   /dev/tty rw,
