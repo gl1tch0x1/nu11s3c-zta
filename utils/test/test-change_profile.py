@@ -91,6 +91,8 @@ class ChangeProfileTestParseInvalid(ChangeProfileTest):
         ('change_profile foo -> ,',         (AppArmorException, False)),
         ('change_profile notsafe,',         (AppArmorException, False)),
         ('change_profile safety -> /bar,',  (AppArmorException, False)),
+        ('priority=-1042 change_profile,',  (AppArmorException, True)),
+        ('priority=a change_profile,',      (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
@@ -191,6 +193,14 @@ class InvalidChangeProfileInit(AATest):
     def test_missing_params_3(self):
         with self.assertRaises(TypeError):
             ChangeProfileRule(None, ChangeProfileRule.ALL)
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            ChangeProfileRule(None, ChangeProfileRule.ALL, '/bar', priority=ChangeProfileRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            ChangeProfileRule(None, ChangeProfileRule.ALL, '/bar', priority='invalid')
 
 
 class InvalidChangeProfileTest(AATest):

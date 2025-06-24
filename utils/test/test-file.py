@@ -122,12 +122,17 @@ class FileTestParseInvalid(FileTest):
         ('/foo PxUx,',    AppArmorException),  # exec mode conflict
         ('/foo PUxPix,',  AppArmorException),  # exec mode conflict
         ('/foo Pi,',      AppArmorException),  # missing 'x'
+        ('priority=-1042 file,',    AppArmorException),  # priority must be a number
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(FileRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             FileRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            FileRule.create_instance('priority=a file,')
 
 
 class FileTestNonMatch(AATest):
@@ -298,6 +303,14 @@ class InvalidFileInit(AATest):
     def test_deny_ix(self):
         with self.assertRaises(AppArmorException):
             FileRule('/foo', 'rw', 'ix', '/bar', False, False, False, deny=True)
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            FileRule('/foo', '', 'ix', '/bar', False, False, False, priority=FileRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            FileRule('/foo', '', 'ix', '/bar', False, False, False, priority='invalid')
 
 
 class InvalidFileTest(AATest):

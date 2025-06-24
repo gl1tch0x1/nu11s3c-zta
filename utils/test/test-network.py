@@ -129,12 +129,17 @@ class NetworkTestParseInvalid(NetworkTest):
         ('network inet peer=(ip=1:2:3:4:5:6:7:8:9:0:0:0),', AppArmorException),  # too many segments
         ('network packet ip=1::,',                          AppArmorException),  # Only inet[6] domains can be used in conjunction with a local expression
         ('network packet peer=(ip=1::),',                   AppArmorException),  # Only inet[6] domains can be used in conjunction with a peer expression
+        ('priority=-1042 network,',                         AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(NetworkRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             NetworkRule.create_instance(rawrule)
+
+    def test_invalid_priority(self):
+        with self.assertRaises(AppArmorException):
+            NetworkRule.create_instance('priority=a network,')
 
 
 class NetworkTestParseFromLog(NetworkTest):
@@ -234,6 +239,14 @@ class InvalidNetworkInit(AATest):
     def test_missing_params_2(self):
         with self.assertRaises(TypeError):
             NetworkRule('inet')
+
+    def test_invalid_priority_1(self):
+        with self.assertRaises(TypeError):
+            NetworkRule(NetworkRule.ALL, NetworkRule.ALL, NetworkRule.ALL, NetworkRule.ALL, NetworkRule.ALL, priority=NetworkRule.ALL)
+
+    def test_invalid_priority_2(self):
+        with self.assertRaises(AppArmorException):
+            NetworkRule(NetworkRule.ALL, NetworkRule.ALL, NetworkRule.ALL, NetworkRule.ALL, NetworkRule.ALL, priority='invalid')
 
 
 class InvalidNetworkTest(AATest):
