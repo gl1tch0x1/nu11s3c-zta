@@ -250,10 +250,7 @@ class CapabilityTestParseInvalid(AATest):
     )
 
     def _run_test(self, rawrule, expected):
-        exp_exception, matches_regex = expected
-        self.assertEqual(matches_regex, CapabilityRule.match(rawrule))  # does the invalid rules still match the main regex?
-        with self.assertRaises(exp_exception):
-            CapabilityRule.create_instance(rawrule)
+        self.parseInvalidRule(CapabilityRule, rawrule, expected)
 
 
 class InvalidCapabilityTest(AATest):

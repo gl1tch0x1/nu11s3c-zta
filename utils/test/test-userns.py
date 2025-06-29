@@ -46,14 +46,13 @@ class UserNamespaceTestParse(AATest):
 
 class UserNamespaceTestParseInvalid(AATest):
     tests = (
-        ('userns invalidaccess,', AppArmorException),
-        ('priority=1042 userns,', AppArmorException),
+        #                                    exception          matches regex
+        ('userns invalidaccess,',           (AppArmorException, True)),
+        ('priority=1042 userns,',           (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(UserNamespaceRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            UserNamespaceRule.create_instance(rawrule)
+        self.parseInvalidRule(UserNamespaceRule, rawrule, expected)
 
     def test_parse_fail(self):
         with self.assertRaises(AppArmorException):

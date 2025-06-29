@@ -119,20 +119,19 @@ class MountTestParse(AATest):
 
 class MountTestParseInvalid(AATest):
     tests = (
-        ('mount fstype=,',           AppArmorException),
-        ('mount fstype=(),',         AppArmorException),
-        ('mount options=(),',        AppArmorException),
-        ('mount option=(invalid),',  AppArmorException),
-        ('mount option=(ext3ext4),', AppArmorException),
-        ('priority=-1042 umount,',   AppArmorException),
-        ('mount fstype=({unclosed_regex),', AppArmorException),  # invalid AARE
-        ('mount fstype=({closed}twice}),',  AppArmorException),  # invalid AARE
+        #                                    exception          matches regex
+        ('mount fstype=,',                  (AppArmorException, True)),
+        ('mount fstype=(),',                (AppArmorException, True)),
+        ('mount options=(),',               (AppArmorException, True)),
+        ('mount option=(invalid),',         (AppArmorException, True)),
+        ('mount option=(ext3ext4),',        (AppArmorException, True)),
+        ('priority=-1042 umount,',          (AppArmorException, True)),
+        ('mount fstype=({unclosed_regex),', (AppArmorException, True)),  # invalid AARE
+        ('mount fstype=({closed}twice}),',  (AppArmorException, True)),  # invalid AARE
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(MountRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            MountRule.create_instance(rawrule)
+        self.parseInvalidRule(MountRule, rawrule, expected)
 
     def test_parse_fail(self):
         with self.assertRaises(AppArmorException):

@@ -50,6 +50,14 @@ class AATest(unittest.TestCase):
             self.createTmpdir()
         return write_file(self.tmpdir, file, contents)
 
+    def parseInvalidRule(self, rule_class, rawrule, expected):
+        ''' verify that invalid rules raise an exception, and verify if they at least match the rule regex'''
+
+        exp_exception, matches_regex = expected
+        self.assertEqual(matches_regex, rule_class.match(rawrule))  # does the invalid rules still match the main regex?
+        with self.assertRaises(exp_exception):
+            rule_class.create_instance(rawrule)
+
     tests = ()
     tmpdir = None
 

@@ -60,15 +60,14 @@ class AllTestParse(AllTest):
 
 class AllTestParseInvalid(AllTest):
     tests = (
-        ('all -> ,',        AppArmorException),
-        ('owner all,',      AppArmorException),
-        ('all foo ,',       AppArmorException),
+        #                                    exception          matches regex
+        ('all -> ,',                        (AppArmorException, False)),
+        ('owner all,',                      (AppArmorException, False)),
+        ('all foo ,',                       (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertFalse(AllRule.match(rawrule))
-        with self.assertRaises(expected):
-            AllRule.create_instance(rawrule)
+        self.parseInvalidRule(AllRule, rawrule, expected)
 
     def test_invalid_priority(self):
         with self.assertRaises(AppArmorException):

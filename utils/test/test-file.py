@@ -111,24 +111,23 @@ class FileTestParse(FileTest):
 
 class FileTestParseInvalid(FileTest):
     tests = (
-        ('/foo x,',       AppArmorException),  # should be *x
-        ('/foo raw,',     AppArmorException),  # r and a conflict
-        ('deny /foo ix,', AppArmorException),  # endy only allows x, but not *x
-        ('deny /foo Px,', AppArmorException),  # deny only allows x, but not *x
-        ('deny /foo Pi,', AppArmorException),  # missing 'x', and P not allowed
-        ('allow /foo x,', AppArmorException),  # should be *x
-        ('/foo Pxrix,',   AppArmorException),  # exec mode conflict
-        ('/foo PixUx,',   AppArmorException),  # exec mode conflict
-        ('/foo PxUx,',    AppArmorException),  # exec mode conflict
-        ('/foo PUxPix,',  AppArmorException),  # exec mode conflict
-        ('/foo Pi,',      AppArmorException),  # missing 'x'
-        ('priority=-1042 file,',    AppArmorException),  # priority must be a number
+        #                                    exception          matches regex
+        ('/foo x,',                         (AppArmorException, True)),  # should be *x
+        ('/foo raw,',                       (AppArmorException, True)),  # r and a conflict
+        ('deny /foo ix,',                   (AppArmorException, True)),  # endy only allows x, but not *x
+        ('deny /foo Px,',                   (AppArmorException, True)),  # deny only allows x, but not *x
+        ('deny /foo Pi,',                   (AppArmorException, True)),  # missing 'x', and P not allowed
+        ('allow /foo x,',                   (AppArmorException, True)),  # should be *x
+        ('/foo Pxrix,',                     (AppArmorException, True)),  # exec mode conflict
+        ('/foo PixUx,',                     (AppArmorException, True)),  # exec mode conflict
+        ('/foo PxUx,',                      (AppArmorException, True)),  # exec mode conflict
+        ('/foo PUxPix,',                    (AppArmorException, True)),  # exec mode conflict
+        ('/foo Pi,',                        (AppArmorException, True)),  # missing 'x'
+        ('priority=-1042 file,',            (AppArmorException, True)),  # priority must be a number
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(FileRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            FileRule.create_instance(rawrule)
+        self.parseInvalidRule(FileRule, rawrule, expected)
 
     def test_invalid_priority(self):
         with self.assertRaises(AppArmorException):

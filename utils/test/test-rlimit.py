@@ -77,24 +77,23 @@ class RlimitTestParse(RlimitTest):
 
 class RlimitTestParseInvalid(RlimitTest):
     tests = (
-        ('set rlimit,',                    AppArmorException),  # missing parts
-        ('set rlimit <= 5,',               AppArmorException),
-        ('set rlimit cpu <= ,',            AppArmorException),
-        ('set rlimit cpu <= "",',          AppArmorBug),        # evil quoting trick
-        ('set rlimit foo <= 5,',           AppArmorException),  # unknown rlimit
-        ('set rlimit rttime <= 60m,',      AppArmorException),  # 'm' could mean 'ms' or 'minutes'
-        ('set rlimit cpu <= 20ms,',        AppArmorException),  # cpu doesn't support 'ms'...
-        ('set rlimit cpu <= 20us,',        AppArmorException),  # ... or 'us'
-        ('set rlimit nice <= 20MB,',       AppArmorException),  # invalid unit for this rlimit type
-        ('set rlimit cpu <= 20MB,',        AppArmorException),
-        ('set rlimit data <= 20seconds,',  AppArmorException),
-        ('set rlimit locks <= 20seconds,', AppArmorException),
+        #                                    exception          matches regex
+        ('set rlimit,',                     (AppArmorException, False)),  # missing parts
+        ('set rlimit <= 5,',                (AppArmorException, False)),
+        ('set rlimit cpu <= ,',             (AppArmorException, False)),
+        ('set rlimit cpu <= "",',           (AppArmorBug,       True)),  # evil quoting trick
+        ('set rlimit foo <= 5,',            (AppArmorException, True)),  # unknown rlimit
+        ('set rlimit rttime <= 60m,',       (AppArmorException, True)),  # 'm' could mean 'ms' or 'minutes'
+        ('set rlimit cpu <= 20ms,',         (AppArmorException, True)),  # cpu doesn't support 'ms'...
+        ('set rlimit cpu <= 20us,',         (AppArmorException, True)),  # ... or 'us'
+        ('set rlimit nice <= 20MB,',        (AppArmorException, True)),  # invalid unit for this rlimit type
+        ('set rlimit cpu <= 20MB,',         (AppArmorException, True)),
+        ('set rlimit data <= 20seconds,',   (AppArmorException, True)),
+        ('set rlimit locks <= 20seconds,',  (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        # self.assertFalse(RlimitRule.match(rawrule))  # the main regex isn't very strict
-        with self.assertRaises(expected):
-            RlimitRule.create_instance(rawrule)
+        self.parseInvalidRule(RlimitRule, rawrule, expected)
 
 
 class RlimitTestParseFromLog(RlimitTest):

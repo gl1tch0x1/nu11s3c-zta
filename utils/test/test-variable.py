@@ -94,21 +94,19 @@ class VariableTestParse(VariableTest):
 
 class VariableTestParseInvalid(VariableTest):
     tests = (
-        # rawrule                 matches regex     exception
-        ('@{foo} =',                   (False, AppArmorException)),
-        ('@ {foo} =      # comment',   (False, AppArmorException)),
-        ('@ {foo} =      ',            (False, AppArmorException)),
-        ('@{foo} = /foo,',             (True,  AppArmorException)),  # trailing comma
-        ('@{foo} = /foo,   ',          (True,  AppArmorException)),  # trailing comma
-        ('@{foo} = /foo,   # comment', (True,  AppArmorException)),  # trailing comma
-        ('@{foo} = /foo, /bar',        (True,  AppArmorException)),  # trailing comma in first value
-        ('@{foo = /foo f',             (True,  AppArmorException)),  # variable name broken, missing }
+        #                                    exception          matches regex
+        ('@{foo} =',                        (AppArmorException, False)),
+        ('@ {foo} =      # comment',        (AppArmorException, False)),
+        ('@ {foo} =      ',                 (AppArmorException, False)),
+        ('@{foo} = /foo,',                  (AppArmorException, True)),  # trailing comma
+        ('@{foo} = /foo,   ',               (AppArmorException, True)),  # trailing comma
+        ('@{foo} = /foo,   # comment',      (AppArmorException, True)),  # trailing comma
+        ('@{foo} = /foo, /bar',             (AppArmorException, True)),  # trailing comma in first value
+        ('@{foo = /foo f',                  (AppArmorException, True)),  # variable name broken, missing }
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertEqual(VariableRule.match(rawrule), expected[0])
-        with self.assertRaises(expected[1]):
-            VariableRule.create_instance(rawrule)
+        self.parseInvalidRule(VariableRule, rawrule, expected)
 
 
 class VariableFromInit(VariableTest):

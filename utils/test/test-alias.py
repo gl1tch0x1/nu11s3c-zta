@@ -58,18 +58,16 @@ class AliasTestParse(AliasTest):
 
 class AliasTestParseInvalid(AliasTest):
     tests = (
-        # rawrule                 matches regex  exception
-        ('alias  ,',              (False,        AppArmorException)),
-        ('alias   /foo  ,',       (False,        AppArmorException)),
-        ('alias   /foo   ->   ,', (True,         AppArmorException)),
-        ('alias   ->   /bar  ,',  (True,         AppArmorException)),
-        ('/foo  ->   bar ,',      (False,        AppArmorException)),
+        #                                    exception          matches regex
+        ('alias  ,',                        (AppArmorException, False)),
+        ('alias   /foo  ,',                 (AppArmorException, False)),
+        ('alias   /foo   ->   ,',           (AppArmorException, True)),
+        ('alias   ->   /bar  ,',            (AppArmorException, True)),
+        ('/foo  ->   bar ,',                (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertEqual(AliasRule.match(rawrule), expected[0])
-        with self.assertRaises(expected[1]):
-            AliasRule.create_instance(rawrule)
+        self.parseInvalidRule(AliasRule, rawrule, expected)
 
 
 class AliasFromInit(AliasTest):

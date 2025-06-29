@@ -61,20 +61,18 @@ class BooleanTestParse(BooleanTest):
 
 class BooleanTestParseInvalid(BooleanTest):
     tests = (
-        # rawrule                     matches regex  exception
-        ('$foo =',                   (False,         AppArmorException)),
-        ('$ foo =      # comment',   (False,         AppArmorException)),
-        ('${foo =      ',            (False,         AppArmorException)),
+        #                                    exception          matches regex
+        ('$foo =',                          (AppArmorException, False)),
+        ('$ foo =      # comment',          (AppArmorException, False)),
+        ('${foo =      ',                   (AppArmorException, False)),
         # XXX RE_PROFILE_BOOLEAN allows a trailing comma even if the parser disallows it
-        # ('$foo = true,',             (True,          AppArmorException)),  # trailing comma
-        # ('$foo = false   ,  ',       (True,          AppArmorException)),  # trailing comma
-        # ('$foo = true,   # comment', (True,          AppArmorException)),  # trailing comma
+        # ('$foo = true,',                  (AppArmorException, True)),  # trailing comma
+        # ('$foo = false   ,  ',            (AppArmorException, True)),  # trailing comma
+        # ('$foo = true,   # comment',      (AppArmorException, True)),  # trailing comma
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertEqual(BooleanRule.match(rawrule), expected[0])
-        with self.assertRaises(expected[1]):
-            BooleanRule.create_instance(rawrule)
+        self.parseInvalidRule(BooleanRule, rawrule, expected)
 
 
 class BooleanFromInit(BooleanTest):
