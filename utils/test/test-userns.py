@@ -48,19 +48,13 @@ class UserNamespaceTestParseInvalid(AATest):
     tests = (
         #                                    exception          matches regex
         ('userns invalidaccess,',           (AppArmorException, True)),
+        ('priority=a userns,',              (AppArmorException, False)),
         ('priority=1042 userns,',           (AppArmorException, True)),
+        ('foo,',                            (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(UserNamespaceRule, rawrule, expected)
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            UserNamespaceRule.create_instance('foo,')
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            UserNamespaceRule.create_instance('priority=a userns,')
 
     def test_diff_non_usernsrule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))

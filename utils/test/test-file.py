@@ -123,15 +123,12 @@ class FileTestParseInvalid(FileTest):
         ('/foo PxUx,',                      (AppArmorException, True)),  # exec mode conflict
         ('/foo PUxPix,',                    (AppArmorException, True)),  # exec mode conflict
         ('/foo Pi,',                        (AppArmorException, True)),  # missing 'x'
-        ('priority=-1042 file,',            (AppArmorException, True)),  # priority must be a number
+        ('priority=-a file,',               (AppArmorException, False)),  # priority must be a number
+        ('priority=-1042 file,',            (AppArmorException, True)),  # priority out of range
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(FileRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            FileRule.create_instance('priority=a file,')
 
 
 class FileTestNonMatch(AATest):

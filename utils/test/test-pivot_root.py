@@ -92,20 +92,13 @@ class PivotRootTestParseInvalid(PivotRootTest):
         ('pivot_root foo bar,',             (AppArmorException, True)),
         ('pivot_root oldroot= ,',           (AppArmorException, True)),
         ('pivot_root ->  ,',                (AppArmorException, True)),
+        ('priority=a pivot_root,',          (AppArmorException, False)),
         ('priority=-1042 pivot_root,',      (AppArmorException, True)),
+        ('pivot_rootbeer,',                 (AppArmorException, False))
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(PivotRootRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            PivotRootRule.create_instance('priority=a pivot_root,')
-
-    def test_invalid_rule_name(self):
-        self.assertFalse(PivotRootRule.match('pivot_rootbeer,'))
-        with self.assertRaises(AppArmorException):
-            PivotRootRule.create_instance('pivot_rootbeer,')
 
 
 class PivotRootTestParseFromLog(PivotRootTest):

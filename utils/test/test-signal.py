@@ -85,15 +85,12 @@ class SignalTestParseInvalid(SignalTest):
         ('signal set=int set=,',            (AppArmorException, True)),
         ('signal set=invalid,',             (AppArmorException, True)),
         ('signal peer=,',                   (AppArmorException, True)),
+        ('priority=a signal,',              (AppArmorException, False)),
         ('priority=-1042 signal,',          (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(SignalRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            SignalRule.create_instance('priority=a signal,')
 
 
 class SignalTestParseFromLog(SignalTest):

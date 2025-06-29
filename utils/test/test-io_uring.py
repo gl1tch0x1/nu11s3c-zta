@@ -53,19 +53,13 @@ class IOUringTestParseInvalid(AATest):
         ('io_uring label=,',                    (AppArmorException, True)),
         ('io_uring invalidaccess label=foo,',   (AppArmorException, True)),
         ('io_uring sqpoll label=,',             (AppArmorException, True)),
+        ('foo',                                 (AppArmorException, False)),
+        ('priority=a io_uring,',                (AppArmorException, False)),
         ('priority=1042 io_uring,',             (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(IOUringRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            IOUringRule.create_instance('priority=a io_uring,')
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            IOUringRule.create_instance('foo,')
 
     def test_diff_non_iouringrule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))

@@ -130,15 +130,12 @@ class NetworkTestParseInvalid(NetworkTest):
         ('network inet peer=(ip=1:2:3:4:5:6:7:8:9:0:0:0),', (AppArmorException, True)),  # too many segments
         ('network packet ip=1::,',                          (AppArmorException, True)),  # Only inet[6] domains can be used in conjunction with a local expression
         ('network packet peer=(ip=1::),',                   (AppArmorException, True)),  # Only inet[6] domains can be used in conjunction with a peer expression
+        ('priority=a network,',                             (AppArmorException, False)),
         ('priority=-1042 network,',                         (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(NetworkRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            NetworkRule.create_instance('priority=a network,')
 
 
 class NetworkTestParseFromLog(NetworkTest):

@@ -66,19 +66,13 @@ class MessageQueueTestParseInvalid(AATest):
         ('mqueue type=,',                       (AppArmorException, True)),
         ('mqueue type=sysv /foo,',              (AppArmorException, True)),
         ('mqueue type=posix 1234,',             (AppArmorException, True)),
+        ('priority=a mqueue,',                  (AppArmorException, False)),
         ('priority=-1042 mqueue,',              (AppArmorException, True)),
+        ('foo,',                                (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(MessageQueueRule, rawrule, expected)
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            MessageQueueRule.create_instance('foo,')
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            MessageQueueRule.create_instance('priority=a mqueue,')
 
     def test_diff_non_mqueuerule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))

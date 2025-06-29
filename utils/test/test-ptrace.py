@@ -81,15 +81,12 @@ class PtraceTestParseInvalid(PtraceTest):
         ('ptrace read bar,',                (AppArmorException, True)),
         ('ptrace read tracedby,',           (AppArmorException, True)),
         ('ptrace peer=,',                   (AppArmorException, True)),
+        ('priority=a ptrace,',              (AppArmorException, False)),
         ('priority=1042 ptrace,',           (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(PtraceRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            PtraceRule.create_instance('priority=a ptrace,')
 
 
 class PtraceTestParseFromLog(PtraceTest):

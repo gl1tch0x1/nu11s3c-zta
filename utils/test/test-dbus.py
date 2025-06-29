@@ -121,15 +121,12 @@ class DbusTestParseInvalid(DbusTest):
         ('dbus peer=,',                                     (AppArmorException, True)),
         ('dbus bus=session bind bus=system,',               (AppArmorException, True)),
         ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', (AppArmorException, True)),
+        ('priority=a dbus,',                                (AppArmorException, False)),
         ('priority=1042 dbus,',                             (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(DbusRule, rawrule, expected)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            DbusRule.create_instance('priority=a dbus,')
 
 
 class DbusTestParseFromLog(DbusTest):

@@ -128,19 +128,15 @@ class MountTestParseInvalid(AATest):
         ('priority=-1042 umount,',          (AppArmorException, True)),
         ('mount fstype=({unclosed_regex),', (AppArmorException, True)),  # invalid AARE
         ('mount fstype=({closed}twice}),',  (AppArmorException, True)),  # invalid AARE
+        ('foo,',                            (AppArmorException, False)),
+        ('priority=a mount,',               (AppArmorException, False)),
+        ('priority=a umount,',              (AppArmorException, False)),
+        ('priority=a unmount,',             (AppArmorException, False)),
+        ('priority=a remount,',             (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(MountRule, rawrule, expected)
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            MountRule.create_instance('foo,')
-
-    def test_invalid_priority(self):
-        for keyword in ['mount', 'umount', 'unmount', 'remount']:
-            with self.assertRaises(AppArmorException):
-                MountRule.create_instance('priority=a %s,' % keyword)
 
     def test_invalid_priority_1(self):
         with self.assertRaises(TypeError):
