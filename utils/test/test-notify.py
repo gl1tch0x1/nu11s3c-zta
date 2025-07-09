@@ -12,7 +12,8 @@
 import unittest
 
 from apparmor.common import AppArmorBug
-from apparmor.notify import get_last_login_timestamp, get_last_login_timestamp_wtmp, sane_timestamp
+from apparmor.notify import get_last_login_timestamp, get_last_login_timestamp_wtmp, sane_timestamp, get_event_special_type
+from apparmor.logparser import ReadLog
 from common_test import AATest, setup_all_loops
 
 
@@ -85,6 +86,36 @@ class TestGet_last_login_timestamp_wtmp(AATest):
         with self.assertRaises(AppArmorBug):
             # wtmp-x86_64-past is hand-edited to Thu Dec 30 00:00:00 CET 1999, which is outside the expected data range
             get_last_login_timestamp_wtmp('root', 'wtmp-examples/wtmp-x86_64-past')
+
+
+class TestEventSpecialType(AATest):
+    userns_special_profiles = ['unconfined', 'unprivileged_userns']
+    parser = ReadLog('', '', '')
+    tests = (
+        ('[  176.385388] audit: type=1400 audit(1666891380.570:78): apparmor="DENIED" operation="userns_create" class="namespace" profile="/usr/bin/bwrap-userns-restrict" pid=1785 comm="userns_child_ex" requested="userns_create" denied="userns_create"',                                                                                           'normal'),
+        ('[  839.488169] audit: type=1400 audit(1752065668.819:208): apparmor="DENIED" operation="userns_create" class="namespace" info="Userns create restricted - failed to find unprivileged_userns profile" error=-13 profile="unconfined" pid=12124 comm="unshare" requested="userns_create" denied="userns_create" target="unprivileged_userns"', 'userns_denied'),
+        ('[  429.272003] audit: type=1400 audit(1720613712.153:168): apparmor="AUDIT" operation="userns_create" class="namespace" info="Userns create - transitioning profile" profile="unconfined" pid=5630 comm="unshare" requested="userns_create" target="unprivileged_userns" execpath="/usr/bin/unshare"',                                        'userns_change_profile'),
+        ('[   52.901383] audit: type=1400 audit(1752064882.228:82): apparmor="DENIED" operation="capable" class="cap" profile="unprivileged_userns" pid=6700 comm="electron" capability=21  capname="sys_admin"',                                                                                                                                       'userns_capable'),
+        ('Jul 31 17:11:16 dbusdev-saucy-amd64 dbus[1692]: apparmor="DENIED" operation="dbus_bind"  bus="session" name="com.apparmor.Test" mask="bind" pid=2940 profile="/tmp/apparmor-2.8.0/tests/regression/apparmor/dbus_service"',                                                                                                                   'normal'),
+        ('[103975.623545] audit: type=1400 audit(1481284511.494:2807): apparmor="DENIED" operation="change_onexec" info="no new privs" error=-1 namespace="root//lxd-tor_<var-lib-lxd>" profile="unconfined" name="system_tor" pid=18593 comm="(tor)" target="system_tor"',                                                                             'userns_change_profile'),
+        ('[78661.551820] audit: type=1400 audit(1752661047.170:350): apparmor="DENIED" operation="capable" class="cap" profile="unpriv_bwrap" pid=1412550 comm="node" capability=21  capname="sys_admin"',                                                                                                                                              'normal'),
+    )
+
+    def _run_test(self, ev, expected):
+        parsed_event = self.parser.parse_event(ev)
+        r = self.parser.create_rule_from_ev(parsed_event)
+        self.assertIsNotNone(r)
+
+        real_type = get_event_special_type(parsed_event, self.userns_special_profiles)
+        self.assertEqual(expected, real_type,
+                         "ev {}: {} != {}".format(ev, expected, real_type))
+
+    def test_invalid(self):
+        ev = 'type=AVC msg=audit(1333698107.128:273917): apparmor="DENIED" operation="recvmsg" parent=1596 profile="unprivileged_userns" pid=1875 comm="nc" laddr=::ffff:127.0.0.1 lport=2048 faddr=::ffff:127.0.0.1 fport=59180 family="inet6" sock_type="stream" protocol=6'
+        parsed_event = self.parser.parse_event(ev)
+        parsed_event['comm'] = 'something'  # Artificially crafted invalid event
+        with self.assertRaises(AppArmorBug):
+            get_event_special_type(parsed_event, self.userns_special_profiles)
 
 
 setup_all_loops(__name__)

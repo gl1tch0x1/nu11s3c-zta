@@ -135,7 +135,7 @@ def is_special_profile_userns(ev, special_profiles):
     if 'comm' not in ev:
         return False  # special profiles have a 'comm' entry
 
-    if not special_profiles or not any(p.match(ev['profile']) for p in special_profiles):
+    if not special_profiles or not ev['profile'] in special_profiles:
         return False  # We don't use special profiles or there is already a profile defined: we don't ask to add userns
 
     return True
