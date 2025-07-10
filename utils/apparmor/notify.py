@@ -16,6 +16,7 @@
 import os
 import struct
 import sqlite3
+import re
 
 from apparmor.common import AppArmorBug, DebugLogger
 
@@ -135,7 +136,7 @@ def is_special_profile_userns(ev, special_profiles):
     if 'comm' not in ev:
         return False  # special profiles have a 'comm' entry
 
-    if not special_profiles or not ev['profile'] in special_profiles:
+    if not special_profiles or not special_profiles.match(ev['profile']):
         return False  # We don't use special profiles or there is already a profile defined: we don't ask to add userns
 
     return True
@@ -155,3 +156,7 @@ def get_event_special_type(ev, special_profiles):
         else:
             raise AppArmorBug('unexpected operation: %s' % ev['operation'])
     return 'normal'
+
+
+def set_userns_special_profile(special_profiles):
+    return re.compile('^({})$'.format('|'.join(special_profiles)))

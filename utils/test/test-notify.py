@@ -12,7 +12,7 @@
 import unittest
 
 from apparmor.common import AppArmorBug
-from apparmor.notify import get_last_login_timestamp, get_last_login_timestamp_wtmp, sane_timestamp, get_event_special_type
+from apparmor.notify import get_last_login_timestamp, get_last_login_timestamp_wtmp, sane_timestamp, get_event_special_type, set_userns_special_profile
 from apparmor.logparser import ReadLog
 from common_test import AATest, setup_all_loops
 
@@ -89,7 +89,7 @@ class TestGet_last_login_timestamp_wtmp(AATest):
 
 
 class TestEventSpecialType(AATest):
-    userns_special_profiles = ['unconfined', 'unprivileged_userns']
+    userns_special_profiles = set_userns_special_profile(['unconfined', 'unprivileged_userns', 'unpriv_.*'])
     parser = ReadLog('', '', '')
     tests = (
         ('[  176.385388] audit: type=1400 audit(1666891380.570:78): apparmor="DENIED" operation="userns_create" class="namespace" profile="/usr/bin/bwrap-userns-restrict" pid=1785 comm="userns_child_ex" requested="userns_create" denied="userns_create"',                                                                                           'normal'),
@@ -98,7 +98,7 @@ class TestEventSpecialType(AATest):
         ('[   52.901383] audit: type=1400 audit(1752064882.228:82): apparmor="DENIED" operation="capable" class="cap" profile="unprivileged_userns" pid=6700 comm="electron" capability=21  capname="sys_admin"',                                                                                                                                       'userns_capable'),
         ('Jul 31 17:11:16 dbusdev-saucy-amd64 dbus[1692]: apparmor="DENIED" operation="dbus_bind"  bus="session" name="com.apparmor.Test" mask="bind" pid=2940 profile="/tmp/apparmor-2.8.0/tests/regression/apparmor/dbus_service"',                                                                                                                   'normal'),
         ('[103975.623545] audit: type=1400 audit(1481284511.494:2807): apparmor="DENIED" operation="change_onexec" info="no new privs" error=-1 namespace="root//lxd-tor_<var-lib-lxd>" profile="unconfined" name="system_tor" pid=18593 comm="(tor)" target="system_tor"',                                                                             'userns_change_profile'),
-        ('[78661.551820] audit: type=1400 audit(1752661047.170:350): apparmor="DENIED" operation="capable" class="cap" profile="unpriv_bwrap" pid=1412550 comm="node" capability=21  capname="sys_admin"',                                                                                                                                              'normal'),
+        ('[78661.551820] audit: type=1400 audit(1752661047.170:350): apparmor="DENIED" operation="capable" class="cap" profile="unpriv_bwrap" pid=1412550 comm="node" capability=21  capname="sys_admin"',                                                                                                                                              'userns_capable'),
     )
 
     def _run_test(self, ev, expected):
