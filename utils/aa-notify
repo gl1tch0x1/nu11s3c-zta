@@ -562,6 +562,14 @@ def get_more_info_about_event(rl, ev, special_profiles, profile_path, header='')
             out += raw_rule[1:]
         else:
             raw_rule = rule.get_clean()
+            # TODO: This is brittle. Priority>1 might be needed. Also do we need to make the message show that we force allow?
+            if aa.is_known_rule(aa.active_profiles.profiles[ev['profile']], rule.rule_name, rule):
+                rule.priority = 1
+                raw_rule = "priority=1 " + raw_rule
+                if aa.is_known_rule(aa.active_profiles.profiles[ev['profile']], rule.rule_name, rule):
+                    # TODO: Handle this edge case more gracefully
+                    raw_rule = _('# aa-notify tried to add rule {}. However aa-notify is not allowed to override priority>0 rules. Please fix your profile manually.\n').format(raw_rule)
+
             if profile_path:
                 out += _('If you want to allow this operation you can add the line below in profile {}\n').format(profile_path)
                 out += raw_rule
