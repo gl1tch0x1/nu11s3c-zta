@@ -117,29 +117,25 @@ class NetworkTestParse(NetworkTest):
 
 class NetworkTestParseInvalid(NetworkTest):
     tests = (
-        ('network foo,',                                    AppArmorException),
-        ('network foo bar,',                                AppArmorException),
-        ('network foo tcp,',                                AppArmorException),
-        ('network inet bar,',                               AppArmorException),
-        ('network ip=999.999.999.999,',                     AppArmorException),
-        ('network port=99999,',                             AppArmorException),
-        ('network inet ip=in:va::li:d0,',                   AppArmorException),
-        ('network inet ip=in:va::li:d0,',                   AppArmorException),
-        ('network inet ip=1:2:3:4:5:6:7:8:9:0:0:0,',        AppArmorException),  # too many segments
-        ('network inet peer=(ip=1:2:3:4:5:6:7:8:9:0:0:0),', AppArmorException),  # too many segments
-        ('network packet ip=1::,',                          AppArmorException),  # Only inet[6] domains can be used in conjunction with a local expression
-        ('network packet peer=(ip=1::),',                   AppArmorException),  # Only inet[6] domains can be used in conjunction with a peer expression
-        ('priority=-1042 network,',                         AppArmorException),
+        #                                                    exception          matches regex
+        ('network foo,',                                    (AppArmorException, True)),
+        ('network foo bar,',                                (AppArmorException, True)),
+        ('network foo tcp,',                                (AppArmorException, True)),
+        ('network inet bar,',                               (AppArmorException, True)),
+        ('network ip=999.999.999.999,',                     (AppArmorException, True)),
+        ('network port=99999,',                             (AppArmorException, True)),
+        ('network inet ip=in:va::li:d0,',                   (AppArmorException, True)),
+        ('network inet ip=in:va::li:d0,',                   (AppArmorException, True)),
+        ('network inet ip=1:2:3:4:5:6:7:8:9:0:0:0,',        (AppArmorException, True)),  # too many segments
+        ('network inet peer=(ip=1:2:3:4:5:6:7:8:9:0:0:0),', (AppArmorException, True)),  # too many segments
+        ('network packet ip=1::,',                          (AppArmorException, True)),  # Only inet[6] domains can be used in conjunction with a local expression
+        ('network packet peer=(ip=1::),',                   (AppArmorException, True)),  # Only inet[6] domains can be used in conjunction with a peer expression
+        ('priority=a network,',                             (AppArmorException, False)),
+        ('priority=-1042 network,',                         (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(NetworkRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            NetworkRule.create_instance(rawrule)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            NetworkRule.create_instance('priority=a network,')
+        self.parseInvalidRule(NetworkRule, rawrule, expected)
 
 
 class NetworkTestParseFromLog(NetworkTest):

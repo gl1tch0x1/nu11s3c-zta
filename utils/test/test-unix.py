@@ -67,23 +67,16 @@ class UnixTestParse(AATest):
 
 class UnixTestParseInvalid(AATest):
     tests = (
-        ('unix invalid,',   AppArmorException),
-        ('unix (invalid),', AppArmorException),
-        ('priority=1042 unix,', AppArmorException),
+        #                                    exception          matches regex
+        ('unix invalid,',                   (AppArmorException, True)),
+        ('unix (invalid),',                 (AppArmorException, True)),
+        ('foo,',                            (AppArmorException, False)),
+        ('priority=a unix,',                (AppArmorException, False)),
+        ('priority=1042 unix,',             (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(UnixRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            UnixRule.create_instance(rawrule)
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            UnixRule.create_instance('foo,')
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            UnixRule.create_instance('priority=a unix,')
+        self.parseInvalidRule(UnixRule, rawrule, expected)
 
     def test_invalid_priority_1(self):
         with self.assertRaises(TypeError):

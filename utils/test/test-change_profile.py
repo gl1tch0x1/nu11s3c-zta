@@ -84,7 +84,7 @@ class ChangeProfileTestParse(ChangeProfileTest):
 
 class ChangeProfileTestParseInvalid(ChangeProfileTest):
     tests = (
-        # rule                              exception,         matches regex?
+        #                                    exception          matches regex
         ('change_profile',                  (AppArmorException, False)),  # missing comma
         ('dbus,',                           (AppArmorException, False)),  # not a change_profile rule
         ('change_profile -> ,',             (AppArmorException, False)),
@@ -96,10 +96,7 @@ class ChangeProfileTestParseInvalid(ChangeProfileTest):
     )
 
     def _run_test(self, rawrule, expected):
-        exp_exception, matches_regex = expected
-        self.assertEqual(matches_regex, ChangeProfileRule.match(rawrule))  # does the invalid rules still match the main regex?
-        with self.assertRaises(exp_exception):
-            ChangeProfileRule.create_instance(rawrule)
+        self.parseInvalidRule(ChangeProfileRule, rawrule, expected)
 
 
 class ChangeProfileTestParseFromLog(ChangeProfileTest):

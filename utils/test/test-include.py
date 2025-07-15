@@ -95,16 +95,17 @@ class IncludeTestParse(IncludeTest):
 
 class IncludeTestParseInvalid(IncludeTest):
     tests = (
-        # (' some #include if exists <abstractions/base>', AppArmorException),
-        # ('  /etc/fstab r,',                              AppArmorException),
-        # ('/usr/include r,',                              AppArmorException),
-        # ('/include r,',                                  AppArmorException),
+        #                                                    exception          matches regex
+        (' some #include if exists <abstractions/base>',    (AppArmorException, False)),
+        ('  /etc/fstab r,',                                 (AppArmorException, False)),
+        ('/usr/include r,',                                 (AppArmorException, False)),
+        ('/include r,',                                     (AppArmorException, False)),
+        (' include <>',                                     (AppArmorException, True)),
+        (' include ""',                                     (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(IncludeRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            IncludeRule.create_instance(rawrule)
+        self.parseInvalidRule(IncludeRule, rawrule, expected)
 
 # class IncludeTestParseFromLog(IncludeTest):  # we'll never have log events for includes
 

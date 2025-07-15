@@ -57,29 +57,22 @@ class MessageQueueTestParse(AATest):
 
 class MessageQueueTestParseInvalid(AATest):
     tests = (
-        ('mqueue label=,',                   AppArmorException),
-        ('mqueue invalidaccess /queuename,', AppArmorException),
-        ('mqueue invalidqueuename,',         AppArmorException),
-        ('mqueue invalidqueuename1234,',     AppArmorException),
-        ('mqueue foo label foo bar,',        AppArmorException),
-        ('mqueue type=,',                    AppArmorException),
-        ('mqueue type=sysv /foo,',           AppArmorException),
-        ('mqueue type=posix 1234,',          AppArmorException),
-        ('priority=-1042 mqueue,',           AppArmorException),
+        #                                        exception          matches regex
+        ('mqueue label=,',                      (AppArmorException, True)),
+        ('mqueue invalidaccess /queuename,',    (AppArmorException, True)),
+        ('mqueue invalidqueuename,',            (AppArmorException, True)),
+        ('mqueue invalidqueuename1234,',        (AppArmorException, True)),
+        ('mqueue foo label foo bar,',           (AppArmorException, True)),
+        ('mqueue type=,',                       (AppArmorException, True)),
+        ('mqueue type=sysv /foo,',              (AppArmorException, True)),
+        ('mqueue type=posix 1234,',             (AppArmorException, True)),
+        ('priority=a mqueue,',                  (AppArmorException, False)),
+        ('priority=-1042 mqueue,',              (AppArmorException, True)),
+        ('foo,',                                (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(MessageQueueRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            MessageQueueRule.create_instance(rawrule)
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            MessageQueueRule.create_instance('foo,')
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            MessageQueueRule.create_instance('priority=a mqueue,')
+        self.parseInvalidRule(MessageQueueRule, rawrule, expected)
 
     def test_diff_non_mqueuerule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))

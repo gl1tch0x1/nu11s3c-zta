@@ -60,23 +60,16 @@ class AllTestParse(AllTest):
 
 class AllTestParseInvalid(AllTest):
     tests = (
-        ('all -> ,',        AppArmorException),
-        ('owner all,',      AppArmorException),
-        ('all foo ,',       AppArmorException),
+        #                                    exception          matches regex
+        ('all -> ,',                        (AppArmorException, False)),
+        ('owner all,',                      (AppArmorException, False)),
+        ('all foo ,',                       (AppArmorException, False)),
+        ('priority=a all,',                 (AppArmorException, False)),
+        ('priority=1042 all,',              (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertFalse(AllRule.match(rawrule))
-        with self.assertRaises(expected):
-            AllRule.create_instance(rawrule)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            AllRule.create_instance('priority=a all,')
-
-    def test_invalid_priority_2(self):
-        with self.assertRaises(AppArmorException):
-            AllRule.create_instance('priority=1042 all,')
+        self.parseInvalidRule(AllRule, rawrule, expected)
 
 
 # we won't ever support converting a log event to an 'all,' rule

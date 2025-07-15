@@ -119,29 +119,24 @@ class MountTestParse(AATest):
 
 class MountTestParseInvalid(AATest):
     tests = (
-        ('mount fstype=,',           AppArmorException),
-        ('mount fstype=(),',         AppArmorException),
-        ('mount options=(),',        AppArmorException),
-        ('mount option=(invalid),',  AppArmorException),
-        ('mount option=(ext3ext4),', AppArmorException),
-        ('priority=-1042 umount,',   AppArmorException),
-        ('mount fstype=({unclosed_regex),', AppArmorException),  # invalid AARE
-        ('mount fstype=({closed}twice}),',  AppArmorException),  # invalid AARE
+        #                                    exception          matches regex
+        ('mount fstype=,',                  (AppArmorException, True)),
+        ('mount fstype=(),',                (AppArmorException, True)),
+        ('mount options=(),',               (AppArmorException, True)),
+        ('mount option=(invalid),',         (AppArmorException, True)),
+        ('mount option=(ext3ext4),',        (AppArmorException, True)),
+        ('priority=-1042 umount,',          (AppArmorException, True)),
+        ('mount fstype=({unclosed_regex),', (AppArmorException, True)),  # invalid AARE
+        ('mount fstype=({closed}twice}),',  (AppArmorException, True)),  # invalid AARE
+        ('foo,',                            (AppArmorException, False)),
+        ('priority=a mount,',               (AppArmorException, False)),
+        ('priority=a umount,',              (AppArmorException, False)),
+        ('priority=a unmount,',             (AppArmorException, False)),
+        ('priority=a remount,',             (AppArmorException, False)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(MountRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            MountRule.create_instance(rawrule)
-
-    def test_parse_fail(self):
-        with self.assertRaises(AppArmorException):
-            MountRule.create_instance('foo,')
-
-    def test_invalid_priority(self):
-        for keyword in ['mount', 'umount', 'unmount', 'remount']:
-            with self.assertRaises(AppArmorException):
-                MountRule.create_instance('priority=a %s,' % keyword)
+        self.parseInvalidRule(MountRule, rawrule, expected)
 
     def test_invalid_priority_1(self):
         with self.assertRaises(TypeError):

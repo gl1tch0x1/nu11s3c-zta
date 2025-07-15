@@ -64,17 +64,16 @@ class AbiTestParse(AbiTest):
 
 
 class AbiTestParseInvalid(AbiTest):
-    # tests = (
-    #     (' some abi <abstractions/base>', AppArmorException),
-    #     ('  /etc/fstab r,',               AppArmorException),
-    #     ('/usr/abi r,',                   AppArmorException),
-    #     ('/abi r,',                       AppArmorException),
-    # )
+    tests = (
+        #                                    exception          matches regex
+        (' some abi <abstractions/base>',   (AppArmorException, False)),
+        ('  /etc/fstab r,',                 (AppArmorException, False)),
+        ('/usr/abi r,',                     (AppArmorException, False)),
+        ('/abi r,',                         (AppArmorException, False)),
+    )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(AbiRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            AbiRule.create_instance(rawrule)
+        self.parseInvalidRule(AbiRule, rawrule, expected)
 
 # class AbiTestParseFromLog(AbiTest):  # we'll never have log events for abi
 

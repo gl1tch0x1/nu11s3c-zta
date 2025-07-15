@@ -109,28 +109,24 @@ class DbusTestParse(DbusTest):
 
 class DbusTestParseInvalid(DbusTest):
     tests = (
-        ('dbus foo,',                                       AppArmorException),
-        ('dbus foo bar,',                                   AppArmorException),
-        ('dbus foo int,',                                   AppArmorException),
-        ('dbus send bar,',                                  AppArmorException),
-        ('dbus send receive,',                              AppArmorException),
-        ('dbus peer=,',                                     AppArmorException),
-        ('dbus peer=(label=foo) path=,',                    AppArmorException),
-        ('dbus (invalid),',                                 AppArmorException),
-        ('dbus peer=,',                                     AppArmorException),
-        ('dbus bus=session bind bus=system,',               AppArmorException),
-        ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', AppArmorException),
-        ('priority=1042 dbus,',                             AppArmorException),
+        #                                                    exception          matches regex
+        ('dbus foo,',                                       (AppArmorException, True)),
+        ('dbus foo bar,',                                   (AppArmorException, True)),
+        ('dbus foo int,',                                   (AppArmorException, True)),
+        ('dbus send bar,',                                  (AppArmorException, True)),
+        ('dbus send receive,',                              (AppArmorException, True)),
+        ('dbus peer=,',                                     (AppArmorException, True)),
+        ('dbus peer=(label=foo) path=,',                    (AppArmorException, True)),
+        ('dbus (invalid),',                                 (AppArmorException, True)),
+        ('dbus peer=,',                                     (AppArmorException, True)),
+        ('dbus bus=session bind bus=system,',               (AppArmorException, True)),
+        ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', (AppArmorException, True)),
+        ('priority=a dbus,',                                (AppArmorException, False)),
+        ('priority=1042 dbus,',                             (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(DbusRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            DbusRule.create_instance(rawrule)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            DbusRule.create_instance('priority=a dbus,')
+        self.parseInvalidRule(DbusRule, rawrule, expected)
 
 
 class DbusTestParseFromLog(DbusTest):

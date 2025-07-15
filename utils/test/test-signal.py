@@ -75,26 +75,22 @@ class SignalTestParse(SignalTest):
 
 class SignalTestParseInvalid(SignalTest):
     tests = (
-        ('signal foo,',          AppArmorException),
-        ('signal foo bar,',      AppArmorException),
-        ('signal foo int,',      AppArmorException),
-        ('signal send bar,',     AppArmorException),
-        ('signal send receive,', AppArmorException),
-        ('signal set=,',         AppArmorException),
-        ('signal set=int set=,', AppArmorException),
-        ('signal set=invalid,',  AppArmorException),
-        ('signal peer=,',        AppArmorException),
-        ('priority=-1042 signal,',  AppArmorException),
+        #                                    exception          matches regex
+        ('signal foo,',                     (AppArmorException, True)),
+        ('signal foo bar,',                 (AppArmorException, True)),
+        ('signal foo int,',                 (AppArmorException, True)),
+        ('signal send bar,',                (AppArmorException, True)),
+        ('signal send receive,',            (AppArmorException, True)),
+        ('signal set=,',                    (AppArmorException, True)),
+        ('signal set=int set=,',            (AppArmorException, True)),
+        ('signal set=invalid,',             (AppArmorException, True)),
+        ('signal peer=,',                   (AppArmorException, True)),
+        ('priority=a signal,',              (AppArmorException, False)),
+        ('priority=-1042 signal,',          (AppArmorException, True)),
     )
 
     def _run_test(self, rawrule, expected):
-        self.assertTrue(SignalRule.match(rawrule))  # the above invalid rules still match the main regex!
-        with self.assertRaises(expected):
-            SignalRule.create_instance(rawrule)
-
-    def test_invalid_priority(self):
-        with self.assertRaises(AppArmorException):
-            SignalRule.create_instance('priority=a signal,')
+        self.parseInvalidRule(SignalRule, rawrule, expected)
 
 
 class SignalTestParseFromLog(SignalTest):
