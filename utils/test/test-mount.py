@@ -148,17 +148,11 @@ class MountTestInvalid(AATest):
         with self.assertRaises(AppArmorException):
             MountRule('mount', MountRule.ALL, MountRule.ALL, MountRule.ALL, MountRule.ALL, priority='invalid')
 
-    def test_diff_non_mountrule(self):
-        exp = namedtuple('exp', ('audit', 'deny', 'priority'))
-        obj = MountRule('mount', ('=', ['ext4']), MountRule.ALL, MountRule.ALL, MountRule.ALL)
-        with self.assertRaises(AppArmorBug):
-            obj.is_equal(exp(False, False, None), False)
-
-    def test_diff_invalid_fstype_equals_or_in(self):
+    def test_invalid_fstype_equals_or_in(self):
         with self.assertRaises(AppArmorBug):
             MountRule('mount', ('ext3', 'ext4'), MountRule.ALL, MountRule.ALL, MountRule.ALL)  # fstype[0] should be '=' or 'in'
 
-    def test_diff_invalid_fstype_aare_2(self):
+    def test_invalid_fstype_aare_2(self):
         fslists = [
             ['invalid_{_regex'],
             ['ext4', 'invalid_}_regex'],
@@ -168,23 +162,13 @@ class MountTestInvalid(AATest):
             with self.assertRaises(AppArmorException):
                 MountRule('mount', ('=', fslist), MountRule.ALL, MountRule.ALL, MountRule.ALL)
 
-    def test_diff_invalid_options_equals_or_in(self):
+    def test_invalid_options_equals_or_in(self):
         with self.assertRaises(AppArmorBug):
             MountRule('mount', MountRule.ALL, ('rbind', 'rw'), MountRule.ALL, MountRule.ALL)  # fstype[0] should be '=' or 'in'
 
-    def test_diff_invalid_options_keyword(self):
+    def test_invalid_options_keyword(self):
         with self.assertRaises(AppArmorException):
             MountRule('mount', MountRule.ALL, ('=', 'invalid'), MountRule.ALL, MountRule.ALL)  # fstype[0] should be '=' or 'in'
-
-    def test_diff_fstype(self):
-        obj1 = MountRule('mount', ('=', ['ext4']), MountRule.ALL, MountRule.ALL, MountRule.ALL)
-        obj2 = MountRule('mount', MountRule.ALL, MountRule.ALL, MountRule.ALL, MountRule.ALL)
-        self.assertFalse(obj1.is_equal(obj2, False))
-
-    def test_diff_source(self):
-        obj1 = MountRule('mount', MountRule.ALL, MountRule.ALL, '/foo', MountRule.ALL)
-        obj2 = MountRule('mount', MountRule.ALL, MountRule.ALL, '/bar', MountRule.ALL)
-        self.assertFalse(obj1.is_equal(obj2, False))
 
     def test_invalid_umount_with_source(self):
         with self.assertRaises(AppArmorException):
@@ -194,11 +178,12 @@ class MountTestInvalid(AATest):
         with self.assertRaises(AppArmorException):
             MountRule('remount', MountRule.ALL, MountRule.ALL, '/foo', MountRule.ALL)
 
-    def test_invalid_mount_changing_propagation(self):
+    def test_invalid_mount_changing_propagation_1(self):
         # Rules changing propagation type can either specify a source or a dest (these are equivalent for apparmor_parser in this specific case) but not both.
         with self.assertRaises(AppArmorException):
             MountRule('mount', MountRule.ALL, ('=', ('runbindable')), '/foo', '/bar')
 
+    def test_invalid_mount_changing_propagation_2(self):
         # Rules changing propagation type cannot specify a fstype.
         with self.assertRaises(AppArmorException):
             MountRule('mount', ('=', ('ext4')), ('=', ('runbindable')), MountRule.ALL, '/foo')
@@ -213,6 +198,24 @@ class MountTestInvalid(AATest):
         with self.assertRaises(AppArmorBug):
             obj = MountConditional('name', [], False, '=', cond_type=None)
             obj.is_covered(obj)
+
+
+class MountTestIsEqual(AATest):
+    def test_diff_non_mountrule(self):
+        exp = namedtuple('exp', ('audit', 'deny', 'priority'))
+        obj = MountRule('mount', ('=', ['ext4']), MountRule.ALL, MountRule.ALL, MountRule.ALL)
+        with self.assertRaises(AppArmorBug):
+            obj.is_equal(exp(False, False, None), False)
+
+    def test_diff_fstype(self):
+        obj1 = MountRule('mount', ('=', ['ext4']), MountRule.ALL, MountRule.ALL, MountRule.ALL)
+        obj2 = MountRule('mount', MountRule.ALL, MountRule.ALL, MountRule.ALL, MountRule.ALL)
+        self.assertFalse(obj1.is_equal(obj2, False))
+
+    def test_diff_source(self):
+        obj1 = MountRule('mount', MountRule.ALL, MountRule.ALL, '/foo', MountRule.ALL)
+        obj2 = MountRule('mount', MountRule.ALL, MountRule.ALL, '/bar', MountRule.ALL)
+        self.assertFalse(obj1.is_equal(obj2, False))
 
 
 class MountTestGlob(AATest):
