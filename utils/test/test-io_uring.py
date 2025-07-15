@@ -61,6 +61,8 @@ class IOUringTestParseInvalid(AATest):
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(IOUringRule, rawrule, expected)
 
+
+class IOUringTestIsEqual(AATest):
     def test_diff_non_iouringrule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))
         obj = IOUringRule(('sqpoll'), IOUringRule.ALL)

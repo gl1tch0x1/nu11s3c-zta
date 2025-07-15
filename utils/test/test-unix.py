@@ -78,6 +78,8 @@ class UnixTestParseInvalid(AATest):
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(UnixRule, rawrule, expected)
 
+
+class UnixTestInvalid(AATest):
     def test_invalid_priority_1(self):
         with self.assertRaises(TypeError):
             UnixRule(UnixRule.ALL, UnixRule.ALL, UnixRule.ALL, UnixRule.ALL,  False, False, False, '', priority=UnixRule.ALL)

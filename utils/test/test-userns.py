@@ -56,6 +56,8 @@ class UserNamespaceTestParseInvalid(AATest):
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(UserNamespaceRule, rawrule, expected)
 
+
+class UserNamespaceTestIsEqual(AATest):
     def test_diff_non_usernsrule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))
         obj = UserNamespaceRule(('create'))
