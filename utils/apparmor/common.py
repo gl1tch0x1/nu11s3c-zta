@@ -10,7 +10,6 @@
 # ------------------------------------------------------------------
 
 import collections
-import glob
 import logging
 import os
 import re
@@ -167,14 +166,6 @@ def valid_path(path):
         return False
 
     return True
-
-
-def get_directory_contents(path):
-    """Find contents of the given directory"""
-    if not valid_path(path):
-        return None
-
-    return sorted(glob.glob(path + "/*"))
 
 
 def is_skippable_file(path):
