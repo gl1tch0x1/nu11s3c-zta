@@ -138,6 +138,8 @@ class MountTestParseInvalid(AATest):
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(MountRule, rawrule, expected)
 
+
+class MountTestInvalid(AATest):
     def test_invalid_priority_1(self):
         with self.assertRaises(TypeError):
             MountRule('mount', MountRule.ALL, MountRule.ALL, MountRule.ALL, MountRule.ALL, priority=MountRule.ALL)

@@ -74,6 +74,8 @@ class MessageQueueTestParseInvalid(AATest):
     def _run_test(self, rawrule, expected):
         self.parseInvalidRule(MessageQueueRule, rawrule, expected)
 
+
+class MessageQueueTestIsEqual(AATest):
     def test_diff_non_mqueuerule(self):
         exp = namedtuple('exp', ('audit', 'deny', 'priority'))
         obj = MessageQueueRule(('open'), 'posix', 'bar', '/foo')
