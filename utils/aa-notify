@@ -486,6 +486,8 @@ def create_userns_profile(name, path, ans):
     except subprocess.CalledProcessError as e:
         if e.returncode != 126:  # return code 126 means the user cancelled the request
             UsernsGUI.show_error_cannot_reload_profile(profile_path, e.returncode)
+    else:
+        aa.update_profiles()
 
 
 def ask_for_user_ns_denied(path, name, interactive=True):
@@ -503,8 +505,6 @@ def ask_for_user_ns_denied(path, name, interactive=True):
 def can_leverage_userns_event(ev):
     if ev['execpath'] is None:
         return 'error_cannot_find_path'
-
-    aa.update_profiles()
 
     if aa.get_profile_filename_from_profile_name(ev['comm']):
         return 'error_userns_profile_exists'
@@ -550,7 +550,6 @@ def get_more_info_about_event(rl, ev, special_profiles, profile_path, header='')
     if rule:
         if type(rule) is FileRule and rule.exec_perms == FileRule.ANY_EXEC:
             rule.exec_perms = 'Pix'
-        aa.update_profiles()
         if get_event_special_type(ev, special_profiles) != 'normal':
             userns_event_usable = can_leverage_userns_event(ev)
             if userns_event_usable == 'error_cannot_find_path':
@@ -619,6 +618,8 @@ def add_to_profile(rule, profile_name):
     except subprocess.CalledProcessError as e:
         if e.returncode != 126:  # return code 126 means the user cancelled the request
             ErrorGUI(_('Failed to add rule {rule} to {profile}\nError code = {retcode}').format(rule=rule, profile=profile_name, retcode=e.returncode), False).show()
+    else:
+        aa.update_profiles()
 
 
 def create_from_file(file_path):
@@ -629,6 +630,8 @@ def create_from_file(file_path):
     except subprocess.CalledProcessError as e:
         if e.returncode != 126:  # return code 126 means the user cancelled the request
             ErrorGUI(_('Failed to add some rules'), False).show()
+    else:
+        aa.update_profiles()
 
 
 def allow_rules(clean_rules, allow_all=False):
@@ -673,8 +676,6 @@ def cb_add_to_profile(notification, action, _args):
     if not rule:
         ErrorGUI(_('ERROR: Could not create rule from event.'), False).show()
         return
-
-    aa.update_profiles()
 
     if get_event_special_type(ev, special_profiles) != 'normal':
         ask_for_user_ns_denied(ev['execpath'], ev['comm'], False)
