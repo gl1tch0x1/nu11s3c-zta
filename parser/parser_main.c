@@ -51,6 +51,7 @@
 #include "policy_cache.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "file_cache.h"
+#include "symtab.h"
 
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
@@ -1092,7 +1093,7 @@ void reset_parser(const char *filename)
 	memset(&cache_tstamp, 0, sizeof(cache_tstamp));
 	mru_skip_cache = 1;
 	free_aliases();
-	free_symtabs();
+	symtab::free_symtab();
 	free_policies();
 	reset_include_stack(filename);
 	aa_features_unref(policy_features);
@@ -1223,7 +1224,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 	}
 
 	if (dump_vars) {
-		dump_symtab();
+		symtab::dump(false);
 		goto out;
 	}
 
@@ -1234,7 +1235,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
   	}
 
 	if (dump_expanded_vars) {
-		dump_expanded_symtab();
+		symtab::dump(true);
 		goto out;
 	}
 

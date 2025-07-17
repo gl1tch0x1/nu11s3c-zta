@@ -532,35 +532,6 @@ char *processid(const char *string, int len)
 	return processunquoted(string, len);
 }
 
-/* strip off surrounding delimiters around variables */
-char *process_var(const char *var)
-{
-	const char *orig = var;
-	int len = strlen(var);
-
-	if (*orig == '@' || *orig == '$') {
-		orig++;
-		len--;
-	} else {
-		PERROR("ASSERT: Found var '%s' without variable prefix\n",
-		       var);
-		return NULL;
-	}
-
-	if (*orig == '{') {
-		orig++;
-		len--;
-		if (orig[len - 1] != '}') {
-			PERROR("ASSERT: No matching '}' in variable '%s'\n",
-		       		var);
-			return NULL;
-		} else
-			len--;
-	}
-
-	return strndup(orig, len);
-}
-
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
 int str_to_boolean(const char *value)
 {

@@ -1220,6 +1220,22 @@ run_tests()
 				"@{BAR}=bin/   \#value
 					/t { /@{BAR} r, }"
 
+	# // at the beginning of the variable contents should not be filtered
+	verify_binary_equality "// in the beginning of variable content" \
+				"/t //bin/foo { }" \
+				"/t //bin//foo { }" \
+				"@{BAR}=/bin/
+					/t /@{BAR}/foo { }" \
+				"@{FOO}=/foo
+					/t //bin/@{FOO} { }" \
+				"@{BAR}=/bin/
+				 @{FOO}=/foo
+					/t /@{BAR}/@{FOO} { }" \
+				"@{BAR}=/bin/
+				 @{FOO}=/foo
+				 @{ROOT}=/
+					/t @{ROOT}@{BAR}/@{FOO} { }"
+
 	test_parser_variables
 
 	# verify combinations of different priority levels

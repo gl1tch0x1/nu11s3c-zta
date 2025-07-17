@@ -193,6 +193,7 @@ static void abi_features(char *filename, bool search);
 	#include "network.h"
 	#include "all_rule.h"
 	#include "cond_expr.h"
+	#include "symtab.h"
 }
 
 %union {
@@ -492,71 +493,37 @@ alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 
 varassign:	TOK_SET_VAR TOK_EQUALS valuelist
 	{
-		struct value_list *list = $3;
-		char *var_name = process_var($1);
 		int err;
-		if (!list || !list->value)
-			yyerror("Assert: valuelist returned NULL");
-		PDEBUG("Matched: set assignment for (%s)\n", $1);
-		err = new_set_var(var_name, list->value);
+		err = symtab::add_var($1, $3);
 		if (err) {
-			free(var_name);
 			yyerror("variable %s was previously declared", $1);
 			/* FIXME: it'd be handy to report the previous location */
 		}
-		for (list = list->next; list; list = list->next) {
-			err = add_set_value(var_name, list->value);
-			if (err) {
-				free(var_name);
-				yyerror("Error adding %s to set var %s",
-					list->value, $1);
-			}
-		}
+
 		free_value_list($3);
-		free(var_name);
 		free($1);
 	}
 
 varassign:	TOK_SET_VAR TOK_ADD_ASSIGN valuelist
 	{
-		struct value_list *list = $3;
-		char *var_name = process_var($1);
 		int err;
-		if (!list || !list->value)
-			yyerror("Assert: valuelist returned NULL");
-		PDEBUG("Matched: additive assignment for (%s)\n", $1);
-		/* do the first one outside the loop, subsequent
-		 * failures are indicative of symtab failures */
-		err = add_set_value(var_name, list->value);
+		err = symtab::add_set_value($1, $3);
 		if (err) {
-			free(var_name);
 			yyerror("variable %s was not previously declared, but is being assigned additional values", $1);
 		}
-		for (list = list->next; list; list = list->next) {
-			err = add_set_value(var_name, list->value);
-			if (err) {
-				free(var_name);
-				yyerror("Error adding %s to set var %s",
-					list->value, $1);
-			}
-		}
 		free_value_list($3);
-		free(var_name);
 		free($1);
 	}
 
 varassign:	TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
 	{
 		int boolean, err;
-		char *var_name = process_var($1);
-		PDEBUG("Matched: boolean assignment (%s) to %s\n", $1, $3);
 		boolean = str_to_boolean($3);
 		if (boolean == -1) {
 			yyerror("Invalid boolean assignment for (%s): %s is not true or false",
 				$1, $3);
 		}
-		err = add_boolean_var(var_name, boolean);
-		free(var_name);
+		err = symtab::add_var($1, boolean);
 		if (err) {
 			yyerror("variable %s was previously declared", $1);
 			/* FIXME: it'd be handy to report the previous location */

@@ -415,8 +415,6 @@ extern const char *local_name(const char *name);
 /* parser_variable.c */
 int expand_entry_variables(char **name);
 extern int process_variables(Profile *prof);
-extern struct var_string *split_out_var(const char *string);
-extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
 extern void warn_uppercase(void);
@@ -457,38 +455,6 @@ bool entry_add_prefix(struct cod_entry *entry, const prefixes &p, const char *&e
 
 #define SECONDS_P_MS (1000LL * 1000LL)
 long long convert_time_units(long long value, long long base, const char *units);
-
-
-/* parser_symtab.c */
-struct set_value {
-	char *val;
-	struct set_value *next;
-};
-enum var_type {
-	sd_boolean,
-	sd_set,
-};
-
-struct symtab {
-	char *var_name;
-	enum var_type type;
-	int boolean;
-	struct set_value *values;
-	struct set_value *expanded;
-};
-
-extern int add_boolean_var(const char *var, int boolean);
-extern int get_boolean_var(const char *var);
-extern int new_set_var(const char *var, const char *value);
-extern int add_set_value(const char *var, const char *value);
-extern struct set_value *get_set_var(const char *var);
-extern char *get_next_set_value(struct set_value **context);
-extern int insert_set_var(struct symtab *var);
-extern struct symtab *remove_set_var(const char *var_name);
-extern int delete_set_var(const char *var_name);
-extern void dump_symtab(void);
-extern void dump_expanded_symtab(void);
-void free_symtabs(void);
 
 /* parser_alias.c */
 extern int new_alias(const char *from, const char *to);
