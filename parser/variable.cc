@@ -24,7 +24,8 @@
 
 variable::variable(const char *var_name, struct value_list *values):
 	type(sd_set),
-	var_name(var_name)
+	var_name(var_name),
+	boolean(false) /* not used */
 {
 	struct value_list *entry = NULL;
 	if (!values || !values->value) {
@@ -39,7 +40,8 @@ variable::variable(const char *var_name, struct value_list *values):
 
 variable::variable(const char *var_name, const char *value):
 	type(sd_set),
-	var_name(var_name)
+	var_name(var_name),
+	boolean(false) /* not used */
 {
 	PDEBUG("Matched: set assignment for (%s)\n", var_name);
 	this->values.insert(value);
