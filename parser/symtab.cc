@@ -139,13 +139,16 @@ variable *symtab::get_set_var(const char *name)
 	char *var_name = variable::process_var(name);
 	variable *var = lookup_existing_symbol(var_name);
 	if (!var) {
-		return var;
+		goto out;
 	}
 	if (var->type != sd_set) {
 		PERROR("Variable %s is not a set variable\n", var_name);
-		return nullptr;
+		var = nullptr;
+		goto out;
 	}
 	var->expand_variable();
+out:
+	free(var_name);
 	return var;
 }
 
@@ -154,12 +157,14 @@ variable *symtab::get_boolean_var(const char *name)
 	char *var_name = variable::process_var(name);
 	variable *var = lookup_existing_symbol(var_name);
 	if (!var) {
-		return var;
+		goto out;
 	}
 	if (var->type != sd_boolean) {
 		PERROR("Variable %s is not a boolean variable\n", var_name);
-		return nullptr;
+		var = nullptr;
+		goto out;
 	}
+out:
 	free(var_name);
 	return var;
 }

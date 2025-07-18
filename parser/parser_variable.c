@@ -140,6 +140,7 @@ int process_profile_variables(Profile *prof)
 	int error = 0;
 	variable *saved_exec_path = NULL;
 	variable *saved_attach_path = NULL;
+	variable *tmp = NULL;
 
 	/* needs to be before PROFILE_NAME_VARIABLE so that variable will
 	 * have the correct name
@@ -185,18 +186,25 @@ cleanup:
 	 * don't support that yet.
 	 */
 	if (prof->attachment) {
-		symtab::delete_var(PROFILE_EXEC_VAR);
-		if (saved_exec_path)
+		tmp = symtab::delete_var(PROFILE_EXEC_VAR);
+		delete tmp;
+		if (saved_exec_path) {
 			symtab::add_var(*saved_exec_path);
+			delete saved_exec_path;
+		}
 	}
 cleanup_attach:
 	if (prof->attachment) {
-		symtab::delete_var(PROFILE_ATTACH_VAR);
-		if (saved_attach_path)
+		tmp = symtab::delete_var(PROFILE_ATTACH_VAR);
+		delete tmp;
+		if (saved_attach_path) {
 			symtab::add_var(*saved_attach_path);
+			delete saved_attach_path;
+		}
 	}
 cleanup_name:
-	symtab::delete_var(PROFILE_NAME_VARIABLE);
+	tmp = symtab::delete_var(PROFILE_NAME_VARIABLE);
+	delete tmp;
 
 out:
 	return error;

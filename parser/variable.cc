@@ -265,6 +265,7 @@ int variable::expand_by_alternation(char **name)
 
 int variable::expand_variable()
 {
+	char *name = NULL;
 	int rc = 0;
 
 	if (type == sd_boolean) {
@@ -290,7 +291,7 @@ int variable::expand_variable()
 			expanded.insert(value); /* no var left to expand */
 			continue;
 		}
-		char *name = variable::process_var(var.c_str());
+		name = variable::process_var(var.c_str());
 		variable *ref = symtab::lookup_existing_symbol(name);
 		if (!ref) {
 			PERROR("Failed to find declaration for: %s\n", var.c_str());
@@ -321,6 +322,7 @@ int variable::expand_variable()
 	}
 
 out:
+	free(name);
 	expanding = false;
 	return rc;
 }
