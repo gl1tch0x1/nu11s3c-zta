@@ -280,7 +280,7 @@ int variable::expand_variable()
 	expanding = true;
 
 	std::list<std::string> work_set(values.begin(), values.end());
-	for (auto value : work_set) {
+	for (const auto &value : work_set) {
 		auto result = extract_variable(value);
 		std::string prefix = std::get<0>(result);
 		std::string var = std::get<1>(result);
@@ -313,7 +313,7 @@ int variable::expand_variable()
 			       ref->var_name.c_str());
 			exit(1);
 		}
-		for (auto refvalue : ref->expanded) {
+		for (const auto &refvalue : ref->expanded) {
 			/* there could still be vars in suffix, so add
 			 * to work_set, not expanded */
 			work_set.push_back(prefix + refvalue + suffix);
@@ -327,7 +327,7 @@ out:
 
 void variable::dump_set_values(std::set<std::string> values)
 {
-	for (auto value : values)
+	for (const auto &value : values)
 		printf(" \"%s\"", value.c_str());
 }
 
