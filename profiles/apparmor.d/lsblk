@@ -23,7 +23,7 @@ profile lsblk /usr/bin/lsblk {
   @{sys}/class/block/ r,
   @{sys}/dev/block/ r,
 
-  @{sys}/devices/pci@{hex4}:@{hex2}/** r,
+  @{sys}/devices/@{pci_bus}/** r,
   @{sys}/devices/virtual/** r,
   @{sys}/devices/platform/** r,
 
