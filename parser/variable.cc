@@ -24,7 +24,8 @@
 
 variable::variable(const char *var_name, struct value_list *values):
 	type(sd_set),
-	var_name(var_name)
+	var_name(var_name),
+	boolean(false) /* not used */
 {
 	struct value_list *entry = NULL;
 	if (!values || !values->value) {
@@ -39,7 +40,8 @@ variable::variable(const char *var_name, struct value_list *values):
 
 variable::variable(const char *var_name, const char *value):
 	type(sd_set),
-	var_name(var_name)
+	var_name(var_name),
+	boolean(false) /* not used */
 {
 	PDEBUG("Matched: set assignment for (%s)\n", var_name);
 	this->values.insert(value);
@@ -263,6 +265,7 @@ int variable::expand_by_alternation(char **name)
 
 int variable::expand_variable()
 {
+	char *name = NULL;
 	int rc = 0;
 
 	if (type == sd_boolean) {
@@ -278,7 +281,7 @@ int variable::expand_variable()
 	expanding = true;
 
 	std::list<std::string> work_set(values.begin(), values.end());
-	for (auto value : work_set) {
+	for (const auto &value : work_set) {
 		auto result = extract_variable(value);
 		std::string prefix = std::get<0>(result);
 		std::string var = std::get<1>(result);
@@ -288,7 +291,7 @@ int variable::expand_variable()
 			expanded.insert(value); /* no var left to expand */
 			continue;
 		}
-		char *name = variable::process_var(var.c_str());
+		name = variable::process_var(var.c_str());
 		variable *ref = symtab::lookup_existing_symbol(name);
 		if (!ref) {
 			PERROR("Failed to find declaration for: %s\n", var.c_str());
@@ -311,7 +314,7 @@ int variable::expand_variable()
 			       ref->var_name.c_str());
 			exit(1);
 		}
-		for (auto refvalue : ref->expanded) {
+		for (const auto &refvalue : ref->expanded) {
 			/* there could still be vars in suffix, so add
 			 * to work_set, not expanded */
 			work_set.push_back(prefix + refvalue + suffix);
@@ -319,13 +322,14 @@ int variable::expand_variable()
 	}
 
 out:
+	free(name);
 	expanding = false;
 	return rc;
 }
 
 void variable::dump_set_values(std::set<std::string> values)
 {
-	for (auto value : values)
+	for (const auto &value : values)
 		printf(" \"%s\"", value.c_str());
 }
 
