@@ -1630,7 +1630,7 @@ def read_profiles(ui_msg=False, skip_profiles=(), skip_disabled=True, skip_perm_
             if is_skippable_file(file):
                 continue
             elif skip_disabled and os.path.exists(f'{profile_dir}/disable/{file}'):
-                aaui.UI_Info("skipping disabled profile %s" % file)
+                debug_logger.debug("skipping disabled profile %s", file)
                 continue
             elif file in skip_profiles:
                 aaui.UI_Info("skipping profile %s" % full_file)
