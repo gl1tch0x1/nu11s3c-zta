@@ -211,8 +211,6 @@ int variable::expand_by_alternation(char **name)
 		return 0; /* no var found, name is unchanged */
 	}
 
-	free(*name);
-
 	if (!prefix.empty() && prefix[prefix.size() - 1] == '/') {
 		/* make sure to not collapse / in the beginning of the path */
 		std::size_t found = prefix.find_first_not_of('/');
@@ -227,6 +225,8 @@ int variable::expand_by_alternation(char **name)
 		PERROR("Failed to find declaration for: %s\n", var.c_str());
 		return 1;
 	}
+
+	free(*name);
 
 	size_t setsize = ref->expanded.size();
 	auto i = ref->expanded.begin();
