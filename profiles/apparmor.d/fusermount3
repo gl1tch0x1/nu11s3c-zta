@@ -32,10 +32,18 @@ profile fusermount3 /usr/bin/fusermount3 {
   mount fstype=fuse.revokefs-fuse options=(nosuid,nodev,rw) revokefs-fuse -> /var/tmp/flatpak-cache-*/**/,
   umount /var/tmp/flatpak-cache-*/**/,
 
+  # flatpak-builder uses rofiles-fuse
+  mount fstype=fuse.rofiles-fuse options=(nosuid,nodev,rw) {rofiles-fuse,/dev/fuse} -> /var/tmp/test-flatpak-*/**/,
+  umount /var/tmp/test-flatpak-*/**/,
+
   /dev/fuse rw,
 
+  # needed since libfuse 3.17.1-rc0 (LP: #2111845)
+  /usr/bin/mount ix,
+  /usr/bin/umount ix,
+
   @{etc_ro}/fuse.conf r,
-  @{PROC}/@{pid}/mounts r,
+  @{PROC}/@{pid}/{mounts,mountinfo} r,
 
   @{exec_path} mr,
 
