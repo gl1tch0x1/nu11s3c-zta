@@ -24,6 +24,7 @@
 
   owner @{HOME}/.cache/mesa_shader_cache_db/ rw,
   owner @{HOME}/.cache/mesa_shader_cache_db/index rwk,
+  owner @{HOME}/.cache/mesa_shader_cache_db/marker rwk,
   owner @{HOME}/.cache/mesa_shader_cache_db/part*/ rw,
   owner @{HOME}/.cache/mesa_shader_cache_db/part*/mesa_cache.db rwkl,
   owner @{HOME}/.cache/mesa_shader_cache_db/part*/mesa_cache.idx rwkl,
