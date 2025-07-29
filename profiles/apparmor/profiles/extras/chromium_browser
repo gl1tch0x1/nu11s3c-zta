@@ -132,8 +132,8 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
   owner @{PROC}/@{pid}/io r,
   owner @{PROC}/@{pid}/mountinfo r,
   owner @{PROC}/@{pid}/setgroups w,
-  owner @{PROC}/@{pid}/{uid,gid}_map w,
-  owner @{PROC}/@{pid}/smaps r,
+  owner @{PROC}/@{pid}/{uid,gid}_map rw,
+  owner @{PROC}/@{pid}/smaps{,_rollup} r,
   @{PROC}/@{pid}/stat r,
   @{PROC}/@{pid}/statm r,
   owner @{PROC}/@{pid}/status r,
@@ -164,6 +164,7 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
   /sys/devices/@{pci_bus}/**/irq r,
   /sys/devices/@{pci_bus}/**/manufacturer r,
   /sys/devices/@{pci_bus}/**/product r,
+  /sys/devices/@{pci_bus}/**/report_descriptor r,
   /sys/devices/@{pci_bus}/**/resource r,
   /sys/devices/@{pci_bus}/**/revision r,
   /sys/devices/@{pci_bus}/**/serial r,
@@ -233,6 +234,9 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
   /usr/bin/gvfs-open ixr,
   /usr/bin/kdialog ixr,
   # TODO: xfce
+  # Block "Create shortcut..." functionality for now
+  deny /usr/bin/xdg-desktop-menu x,
+  deny /usr/bin/xdg-icon-resource x,
 
   # Importing firefox settings (requires 'r' access to @{HOME}/.mozilla/**
   # which is provided by abstractions/ubuntu-browsers.d/user-files).
