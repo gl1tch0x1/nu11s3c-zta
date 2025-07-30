@@ -133,8 +133,7 @@ struct aa_perms compute_fperms_user(uint32_t accept1, uint32_t accept2,
 	perms.prompt = map_old_perms(dfa_user_allow(accept3));
 	perms.audit = map_old_perms(dfa_user_audit(accept1, accept2));
 	perms.quiet = map_old_perms(dfa_user_quiet(accept1, accept2));
-	if (prompt_compat_mode != PROMPT_COMPAT_PERMSV1)
-		perms.xindex = dfa_user_xindex(accept1);
+	perms.xindex = dfa_user_xindex(accept1);
 
 	compute_fperms_allow(&perms, accept1);
 	perms.prompt &= ~(perms.allow | perms.deny);
@@ -150,8 +149,7 @@ struct aa_perms compute_fperms_other(uint32_t accept1, uint32_t accept2,
 	perms.prompt = map_old_perms(dfa_other_allow(accept3));
 	perms.audit = map_old_perms(dfa_other_audit(accept1, accept2));
 	perms.quiet = map_old_perms(dfa_other_quiet(accept1, accept2));
-	if (prompt_compat_mode != PROMPT_COMPAT_PERMSV1)
-		perms.xindex = dfa_other_xindex(accept1);
+	perms.xindex = dfa_other_xindex(accept1);
 
 	compute_fperms_allow(&perms, accept1);
 	perms.prompt &= ~(perms.allow | perms.deny);

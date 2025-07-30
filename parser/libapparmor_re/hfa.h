@@ -289,13 +289,10 @@ public:
 
 	int apply_and_clear_deny(void) { return perms.apply_and_clear_deny(); }
 	void map_perms_to_accept(perm32_t &accept1, perm32_t &accept2,
-				 perm32_t &accept3, bool prompt)
+				 perm32_t &accept3)
 	{
 		accept1 = perms.allow;
-		if (prompt && prompt_compat_mode == PROMPT_COMPAT_DEV)
-			accept2 = PACK_AUDIT_CTL(perms.prompt, perms.quiet);
-		else
-			accept2 = PACK_AUDIT_CTL(perms.audit, perms.quiet);
+		accept2 = PACK_AUDIT_CTL(perms.audit, perms.quiet);
 		accept3 = perms.prompt;
 	}
 
@@ -399,10 +396,8 @@ public:
 	void apply_equivalence_classes(std::map<transchar, transchar> &eq);
 
 	void compute_perms_table_ent(State *state, size_t pos,
-				     std::vector <aa_perms> &perms_table,
-				     bool prompt);
-	void compute_perms_table(std::vector <aa_perms> &perms_table,
-				 bool prompt);
+				     std::vector <aa_perms> &perms_table);
+  void compute_perms_table(std::vector <aa_perms> &perms_table);
 
 	unsigned int diffcount;
 	int oob_range;

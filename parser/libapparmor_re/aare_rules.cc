@@ -315,7 +315,7 @@ CHFA *aare_rules::create_chfa(int *min_match_len,
 		//cerr << "Checking extended perms " << extended_perms << "\n";
 		if (extended_perms) {
 			//cerr << "creating permstable\n";
-			dfa.compute_perms_table(perms_table, prompt);
+			dfa.compute_perms_table(perms_table);
 			// TODO: move perms table to a class
 			if (opts.dump & DUMP_DFA_TRANS_TABLE && perms_table.size()) {
 				cerr << "Perms Table size: " << perms_table.size() << "\n";

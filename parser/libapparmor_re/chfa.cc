@@ -118,12 +118,10 @@ CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
 		accept2.resize(max(dfa.states.size(), (size_t) 2));
 		dfa.nonmatching->map_perms_to_accept(accept[0],
 						     accept2[0],
-						     accept3,
-						     prompt);
+						     accept3);
 		dfa.start->map_perms_to_accept(accept[1],
 					       accept2[1],
-					       accept3,
-					       prompt);
+					       accept3);
 	}
 	next_check.resize(max(optimal, (size_t) dfa.max_range));
 	free_list.resize(next_check.size());
@@ -147,8 +145,7 @@ CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
 				else
 					(*i)->map_perms_to_accept(accept[num.size()],
 								  accept2[num.size()],
-								  accept3,
-								  prompt);
+								  accept3);
 				num.insert(make_pair(*i, num.size()));
 			}
 			if (opts.dump & (DUMP_DFA_TRANS_PROGRESS)) {
@@ -170,8 +167,7 @@ CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
 				else
 					i->second->map_perms_to_accept(accept[num.size()],
 								       accept2[num.size()],
-								       accept3,
-								       prompt);
+								       accept3);
 				num.insert(make_pair(i->second, num.size()));
 			}
 			if (opts.dump & (DUMP_DFA_TRANS_PROGRESS)) {

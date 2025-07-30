@@ -797,12 +797,8 @@ static int process_arg(int c, char *optarg)
 	case ARG_PROMPT_COMPAT:
 		if (strcmp(optarg, "permsv2") == 0) {
 			prompt_compat_mode = PROMPT_COMPAT_PERMSV2;
-		} else if (strcmp(optarg, "permsv1") == 0) {
-			prompt_compat_mode = PROMPT_COMPAT_PERMSV1;
 		} else if (strcmp(optarg, "default") == 0) {
 			prompt_compat_mode = default_prompt_compat_mode();
-		} else if (strcmp(optarg, "dev") == 0) {
-			prompt_compat_mode = PROMPT_COMPAT_DEV;
 		} else if (strcmp(optarg, "ignore") == 0) {
 			prompt_compat_mode = PROMPT_COMPAT_IGNORE;
 		} else if (strcmp(optarg, "flag") == 0) {
