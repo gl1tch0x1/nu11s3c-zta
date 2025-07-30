@@ -255,6 +255,7 @@ tests/regression/apparmor/introspect
 tests/regression/apparmor/io_uring
 tests/regression/apparmor/link
 tests/regression/apparmor/link_subset
+tests/regression/apparmor/linkat_tmpfile
 tests/regression/apparmor/mkdir
 tests/regression/apparmor/mmap
 tests/regression/apparmor/mount

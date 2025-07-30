@@ -144,6 +144,7 @@ SRC=access.c \
     getcon_verify.c \
     link.c \
     link_subset.c \
+    linkat_tmpfile.c \
     mmap.c \
     mkdir.c \
     mount.c \
@@ -311,6 +312,7 @@ TESTS=aa_exec \
       i18n \
       link \
       link_subset \
+      linkat_tmpfile \
       mkdir \
       mmap \
       mount \
