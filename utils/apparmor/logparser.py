@@ -113,7 +113,6 @@ class ReadLog:
         return log_entry
 
     def get_event_type(self, e):
-
         if e['operation'] == 'exec':
             return 'file'
         elif e['class'] and e['class'] == 'namespace':
@@ -131,6 +130,8 @@ class ReadLog:
             return 'pivot_root'
         elif e['class'] and e['class'] == 'net' and e['family'] and e['family'] == 'unix':
             return 'unix'
+        elif e['operation'] == 'change_onexec':
+            return 'change_profile'
         elif e['class'] == 'file' or self.op_type(e) == 'file':
             return 'file'
         elif e['operation'] == 'capable':
@@ -160,6 +161,8 @@ class ReadLog:
         return None
 
     def create_rule_from_ev(self, ev):
+        if not ev:
+            return None
         event_type = self.get_event_type(ev)
         if not event_type:
             return None
@@ -244,7 +247,7 @@ class ReadLog:
 
         elif event_type == 'io_uring':
             ev['peer_profile'] = event.peer_profile
-        elif event_type == 'capability':
+        elif event_type == 'capability' or ev['operation'] == 'change_onexec':
             ev['comm'] = event.comm
 
         if not ev['time']:
