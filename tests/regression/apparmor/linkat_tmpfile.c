@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
     if (argc != 2 && argc != 3) {
-        fprintf(stderr, "FAIL: Usage: linkat tmpdir final_location\n");
+        fprintf(stderr, "FAIL: Usage: linkat_tmpfile tmpdir [final_location]\n");
         return 1;
     }
     int tmpfile_fd = open(argv[1], O_TMPFILE | O_WRONLY, S_IRUSR | S_IWUSR);
