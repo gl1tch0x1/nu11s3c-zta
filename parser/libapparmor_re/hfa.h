@@ -397,7 +397,7 @@ public:
 
 	void compute_perms_table_ent(State *state, size_t pos,
 				     std::vector <aa_perms> &perms_table);
-  void compute_perms_table(std::vector <aa_perms> &perms_table);
+	void compute_perms_table(std::vector <aa_perms> &perms_table);
 
 	unsigned int diffcount;
 	int oob_range;
