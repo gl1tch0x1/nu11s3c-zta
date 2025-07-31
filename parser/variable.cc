@@ -189,11 +189,23 @@ static void trim_trailing_slash(std::string& str)
 		str.clear(); // str is all '/'
 }
 
+int copy_value_to_name(std::string value, char **name)
+{
+	free(*name);
+	*name = strdup(value.c_str());
+	if (!*name) {
+		errno = ENOMEM;
+		return -1;
+	}
+	return 0;
+}
+
 int variable::expand_by_alternation(char **name)
 {
 	std::string expanded_name = "";
 	bool filter_leading_slash = false;
 	bool filter_trailing_slash = false;
+	int ret = 0;
 
 	if (!name) {
 		PERROR("ASSERT: name to be expanded cannot be NULL\n");
@@ -226,8 +238,6 @@ int variable::expand_by_alternation(char **name)
 		return 1;
 	}
 
-	free(*name);
-
 	size_t setsize = ref->expanded.size();
 	auto i = ref->expanded.begin();
 
@@ -252,15 +262,19 @@ int variable::expand_by_alternation(char **name)
 	if (setsize > 1) {
 		expanded_name += "}";
 	}
-
-	expanded_name = prefix + expanded_name + suffix;
-	*name = strdup(expanded_name.c_str());
-	if (!*name) {
-		errno = ENOMEM;
-		return -1;
-	}
+	/* don't include prefix */
+	expanded_name = expanded_name + suffix;
+	ret = copy_value_to_name(expanded_name, name);
+	if (ret)
+		return ret;
 	/* recursive until no variables are found in *name */
-	return expand_by_alternation(name);
+	ret = expand_by_alternation(name);
+	if (ret == 0) {
+		/* return prefix to name */
+		expanded_name = prefix + std::string(*name);
+		ret = copy_value_to_name(expanded_name, name);
+	}
+	return ret;
 }
 
 int variable::expand_variable()
