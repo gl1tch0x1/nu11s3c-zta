@@ -39,7 +39,7 @@ class CHFA {
       public:
 	CHFA(void);
 	CHFA(DFA &dfa, std::map<transchar, transchar> &eq, optflags const &opts,
-	     bool permindex, bool prompt);
+	     bool permindex);
 	void dump(ostream & os);
 	void flex_table(ostream &os, optflags const &opts);
 	void init_free_list(std::vector<std::pair<size_t, size_t> > &free_list,
@@ -48,10 +48,6 @@ class CHFA {
 		     StateTrans &cases);
 	void insert_state(std::vector<std::pair<size_t, size_t> > &free_list,
 			  State *state, DFA &dfa);
-	void weld_file_to_policy(CHFA &file_chfa, size_t &new_start,
-				 bool accept_idx, bool prompt,
-				 std::vector <aa_perms>  &policy_perms,
-				 std::vector <aa_perms> &file_perms);
 
 	// private:
 	// sigh templates suck, friend declaration does not work so for now

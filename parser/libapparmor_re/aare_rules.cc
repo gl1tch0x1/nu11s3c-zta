@@ -203,7 +203,7 @@ bool aare_rules::append_rule(const char *rule, bool oob, bool with_perm,
 CHFA *aare_rules::create_chfa(int *min_match_len,
 			      vector <aa_perms> &perms_table,
 			      optflags const &opts, bool filedfa,
-			      bool extended_perms, bool prompt)
+			      bool extended_perms)
 {
 	/* finish constructing the expr tree from the different permission
 	 * set nodes */
@@ -315,7 +315,7 @@ CHFA *aare_rules::create_chfa(int *min_match_len,
 		//cerr << "Checking extended perms " << extended_perms << "\n";
 		if (extended_perms) {
 			//cerr << "creating permstable\n";
-			dfa.compute_perms_table(perms_table, prompt);
+			dfa.compute_perms_table(perms_table);
 			// TODO: move perms table to a class
 			if (opts.dump & DUMP_DFA_TRANS_TABLE && perms_table.size()) {
 				cerr << "Perms Table size: " << perms_table.size() << "\n";
@@ -329,7 +329,7 @@ CHFA *aare_rules::create_chfa(int *min_match_len,
 				cerr << "\n";
 			}
 		}
-		chfa = new CHFA(dfa, eq, opts, extended_perms, prompt);
+		chfa = new CHFA(dfa, eq, opts, extended_perms);
 		if (opts.dump & DUMP_DFA_TRANS_TABLE)
 			chfa->dump(cerr);
 		if (opts.dump & DUMP_DFA_COMPTRESSED_STATES)
@@ -350,15 +350,14 @@ CHFA *aare_rules::create_chfa(int *min_match_len,
 void *aare_rules::create_dfablob(size_t *size, int *min_match_len,
 				 vector <aa_perms> &perms_table,
 				 optflags const &opts, bool filedfa,
-				 bool extended_perms, bool prompt)
+				 bool extended_perms)
 {
 	char *buffer = NULL;
 	stringstream stream;
 
 	try {
 		CHFA *chfa = create_chfa(min_match_len, perms_table,
-					 opts, filedfa, extended_perms,
-					 prompt);
+					 opts, filedfa, extended_perms);
 		if (!chfa) {
 			*size = 0;
 			return NULL;
@@ -377,85 +376,6 @@ void *aare_rules::create_dfablob(size_t *size, int *min_match_len,
 	*size = buf->in_avail();
 
 	buffer = (char *)malloc(*size);
-	if (!buffer)
-		return NULL;
-	buf->sgetn(buffer, *size);
-
-	return buffer;
-}
-
-
-/* create a dfa from the ruleset
- * returns: buffer contain dfa tables, @size set to the size of the tables
- *          else NULL on failure, @min_match_len set to the shortest string
- *          that can match the dfa for determining xmatch priority.
- */
-void *aare_rules::create_welded_dfablob(aare_rules *file_rules,
-					size_t *size, int *min_match_len,
-					size_t *new_start,
-					vector <aa_perms> &perms_table,
-					optflags const &opts,
-					bool extended_perms, bool prompt)
-{
-	int file_min_len;
-	vector <aa_perms> file_perms;
-	CHFA *file_chfa;
-	try {
-		file_chfa = file_rules->create_chfa(&file_min_len,
-						    file_perms, opts,
-						    true, extended_perms, prompt);
-		if (!file_chfa) {
-			*size = 0;
-			return NULL;
-		}
-	}
-	catch(int error) {
-		*size = 0;
-		return NULL;
-	}
-
-	CHFA *policy_chfa;
-	try {
-		policy_chfa = create_chfa(min_match_len,
-					  perms_table, opts,
-					  false, extended_perms, prompt);
-		if (!policy_chfa) {
-			delete file_chfa;
-			*size = 0;
-			return NULL;
-		}
-	}
-	catch(int error) {
-		delete file_chfa;
-		*size = 0;
-		return NULL;
-	}
-
-	stringstream stream;
-	try {
-		policy_chfa->weld_file_to_policy(*file_chfa, *new_start,
-						 extended_perms, prompt,
-						 perms_table, file_perms);
-		policy_chfa->flex_table(stream, opts);
-	}
-	catch(int error) {
-		delete (file_chfa);
-		delete (policy_chfa);
-		*size = 0;
-		return NULL;
-	}
-	delete file_chfa;
-	delete policy_chfa;
-
-	/* write blob to buffer */
-	stringbuf *buf = stream.rdbuf();
-
-	buf->pubseekpos(0);
-	*size = buf->in_avail();
-	if (file_min_len < *min_match_len)
-		*min_match_len = file_min_len;
-
-	char *buffer = (char *)malloc(*size);
 	if (!buffer)
 		return NULL;
 	buf->sgetn(buffer, *size);

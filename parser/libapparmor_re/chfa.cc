@@ -59,7 +59,7 @@ void CHFA::init_free_list(vector<pair<size_t, size_t> > &free_list,
  *       permtable index flag
  */
 CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
-	   bool permindex, bool prompt): eq(eq)
+	   bool permindex): eq(eq)
 {
 	if (opts.dump & DUMP_DFA_TRANS_PROGRESS)
 		fprintf(stderr, "Compressing HFA:\r");
@@ -118,12 +118,10 @@ CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
 		accept2.resize(max(dfa.states.size(), (size_t) 2));
 		dfa.nonmatching->map_perms_to_accept(accept[0],
 						     accept2[0],
-						     accept3,
-						     prompt);
+						     accept3);
 		dfa.start->map_perms_to_accept(accept[1],
 					       accept2[1],
-					       accept3,
-					       prompt);
+					       accept3);
 	}
 	next_check.resize(max(optimal, (size_t) dfa.max_range));
 	free_list.resize(next_check.size());
@@ -147,8 +145,7 @@ CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
 				else
 					(*i)->map_perms_to_accept(accept[num.size()],
 								  accept2[num.size()],
-								  accept3,
-								  prompt);
+								  accept3);
 				num.insert(make_pair(*i, num.size()));
 			}
 			if (opts.dump & (DUMP_DFA_TRANS_PROGRESS)) {
@@ -170,8 +167,7 @@ CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, optflags const &opts,
 				else
 					i->second->map_perms_to_accept(accept[num.size()],
 								       accept2[num.size()],
-								       accept3,
-								       prompt);
+								       accept3);
 				num.insert(make_pair(i->second, num.size()));
 			}
 			if (opts.dump & (DUMP_DFA_TRANS_PROGRESS)) {
@@ -518,117 +514,4 @@ void CHFA::flex_table(ostream &os, optflags const &opts) {
 			cerr << "using 16 bit state tables, embedded flags\n";
 		flex_table_serialize<uint16_t>(*this, os, (1 << 16) - 1);
 	}
-}
-
-/*
- * @file_chfa: chfa to add on to the policy chfa
- * @new_start: new start state for where the @file_dfa is in the new chfa
- *
- * Make a new chfa that is a combination of policy and file chfas. It
- * assumes policy is built with AA_CLASS_FILE support transition. The
- * resultant chfa will have file states and indexes offset except for
- * start and null states.
- *
- * NOTE:
- * - modifies chfa
- * requires:
- * - no ec
- * - policy chfa has transitions state[start].next[AA_CLASS_FILE]
- * - policy perms table is build if using permstable
-
- */
-void CHFA::weld_file_to_policy(CHFA &file_chfa, size_t &new_start,
-			       bool accept_idx, bool prompt,
-			       vector <aa_perms>  &policy_perms,
-			       vector <aa_perms> &file_perms)
-{
-	// doesn't support remapping eq classes yet
-	if (eq.size() > 0 || file_chfa.eq.size() > 0)
-		throw 1;
-
-	size_t old_base_size = default_base.size();
-	size_t old_next_size = next_check.size();
-
-	const State *nonmatching = default_base[0].first;
-	//const State *start = default_base[1].first;
-	const State *file_nonmatching = file_chfa.default_base[0].first;
-
-	// renumber states from file_dfa by appending to policy dfa
-	num.insert(make_pair(file_nonmatching, 0));	// remap to policy nonmatching
-	for (map<const State *, size_t>::iterator i = file_chfa.num.begin(); i != file_chfa.num.end() ; i++) {
-		if (i->first == file_nonmatching)
-			continue;
-		num.insert(make_pair(i->first, i->second + old_base_size));
-	}
-
-	// handle default and base table expansion, and setup renumbering
-	// while we remap file_nonmatch within the table, we still keep its
-	// slot.
-	bool first = true;
-	for (DefaultBase::iterator i = file_chfa.default_base.begin(); i != file_chfa.default_base.end(); i++) {
-		const State *def;
-		size_t base;
-		if (first) {
-			first = false;
-			// remap file_nonmatch to nonmatch
-			def = nonmatching;
-			base = 0;
-		} else {
-			def = i->first;
-			base = i->second + old_next_size;
-		}
-		default_base.push_back(make_pair(def, base));
-	}
-
-	// mapping for these are handled by num[]
-	for (NextCheck::iterator i = file_chfa.next_check.begin(); i != file_chfa.next_check.end(); i++) {
-		next_check.push_back(*i);
-	}
-
-	// append file perms to policy perms, and rework permsidx if needed
-	if (accept_idx) {
-		// policy idx double
-		// file + doubled offset
-		// Requires: policy perms table, so we can double and
-		//           update indexes
-		//         * file perm idx to start on even idx
-		//         * policy perms table size to double and entries
-		//           to repeat
-		assert(accept.size() == old_base_size);
-		accept.resize(accept.size() + file_chfa.accept.size());
-		assert(policy_perms.size() < std::numeric_limits<ssize_t>::max());
-		ssize_t size = (ssize_t) policy_perms.size();
-		policy_perms.resize(size*2 + file_perms.size());
-		// shift and double the policy perms
-		for (ssize_t i = size - 1; i >= 0; i--) {
-			policy_perms[i*2] = policy_perms[i];
-			policy_perms[i*2 + 1] = policy_perms[i];
-		}
-		// update policy accept idx for the new shifted perms table
-		for (size_t i = 0; i < old_base_size; i++) {
-			accept[i] = accept[i]*2;
-		}
-		// copy over file perms
-		for (size_t i = 0; i < file_perms.size(); i++) {
-			policy_perms[size*2 + i] = file_perms[i];
-		}
-		// shift file accept indexs
-		for (size_t i = 0; i < file_chfa.accept.size(); i++) {
-			accept[old_base_size + i] = file_chfa.accept[i] + size*2;
-		}
-	} else {
-		// perms are stored in accept just append the perms
-		size_t size = accept.size();
-		accept.resize(size + file_chfa.accept.size());
-		accept2.resize(size + file_chfa.accept.size());
-		for (size_t i = 0; i < file_chfa.accept.size(); i++) {
-			accept[size + i] = file_chfa.accept[i];
-			accept2[size + i] = file_chfa.accept2[i];
-		}
-	}
-
-	// Rework transition state[start].next[AA_CLASS_FILE]
-	next_check[default_base[1].second + AA_CLASS_FILE].first = file_chfa.start;
-
-	new_start = num[file_chfa.start];
 }
