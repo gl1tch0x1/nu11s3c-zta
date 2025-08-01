@@ -72,7 +72,7 @@ Filter by profile name
 
 =item  --filter.profile_attach PROFILE_ATTACH
 
-Filter by profile attachement (i.e. by path of the executable to which this profile applies)
+Filter by profile attachment (i.e. by path of the executable to which this profile applies)
 
 =item  --filter.profile_path PROFILE_PATH
 
