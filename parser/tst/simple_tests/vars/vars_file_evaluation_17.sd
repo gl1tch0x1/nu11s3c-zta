@@ -1,0 +1,7 @@
+#=DESCRIPTION expansion of alternation after extra, unescaped @
+#=EXRESULT PASS
+@{uid} = {[0-9],[1-9][0-9]}
+
+/usr/bin/foo {
+  /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/cpu.max r,
+}
