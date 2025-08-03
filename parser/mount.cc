@@ -1170,10 +1170,6 @@ void mnt_rule::post_parse_profile(Profile &prof)
 			exit(1);
 		}
 
-		if (perms & AA_USER_EXEC)
-			perms |= SHIFT_PERMS(n << 10, AA_USER_SHIFT);
-		if (perms & AA_OTHER_EXEC)
-			perms |= SHIFT_PERMS(n << 10, AA_OTHER_SHIFT);
 		perms = ((perms & ~AA_ALL_EXEC_MODIFIERS) |
 				(perms & AA_ALL_EXEC_MODIFIERS));
 
