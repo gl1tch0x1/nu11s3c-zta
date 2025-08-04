@@ -1163,17 +1163,7 @@ fail:
 void mnt_rule::post_parse_profile(Profile &prof)
 {
 	if (trans) {
-		perm32_t perms = 0;
-		int n = add_entry_to_x_table(&prof, trans);
-		if (!n) {
-			PERROR("Profile %s has too many specified profile transitions.\n", prof.name);
-			exit(1);
-		}
-
-		perms = ((perms & ~AA_ALL_EXEC_MODIFIERS) |
-				(perms & AA_ALL_EXEC_MODIFIERS));
-
-		trans = NULL;
+		/* TODO: pivot_root profile transition */
 	}
 }
 
