@@ -431,11 +431,14 @@ public:
 	ostream &dump(ostream &os) override {
 		class_rule_t::dump(os);
 
+		std::ios::fmtflags fmt(os.flags());
+
 		if (saved)
 			os << "(0x" << std::hex << perms << "/orig " << saved << ") ";
 		else
 			os << "(0x" << std::hex << perms << ") ";
 
+		os.flags(fmt);
 		return os;
 	}
 
@@ -460,7 +463,11 @@ public:
 	ostream &dump(ostream &os) override {
 		class_rule_t::dump(os);
 
+		std::ios::fmtflags fmt(os.flags());
+
 		os << "(0x" << std::hex << perms << ") ";
+
+		os.flags(fmt);
 		return os;
 	}
 

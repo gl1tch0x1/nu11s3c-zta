@@ -570,6 +570,8 @@ ostream &mnt_rule::dump(ostream &os)
 {
 	prefix_rule_t::dump(os);
 
+	std::ios::fmtflags fmt(os.flags());
+
 	if (perms & AA_MAY_MOUNT)
 		os << "mount";
 	else if (perms & AA_MAY_UMOUNT)
@@ -603,6 +605,7 @@ ostream &mnt_rule::dump(ostream &os)
 	os << " " << "(0x" << hex << perms << "/0x" << (audit != AUDIT_UNSPECIFIED ? perms : 0) << ")";
 	os << ",\n";
 
+	os.flags(fmt);
 	return os;
 }
 
