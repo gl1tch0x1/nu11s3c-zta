@@ -189,7 +189,7 @@ static void trim_trailing_slash(std::string& str)
 		str.clear(); // str is all '/'
 }
 
-int copy_value_to_name(std::string value, char **name)
+int copy_value_to_name(const std::string& value, char **name)
 {
 	free(*name);
 	*name = strdup(value.c_str());
