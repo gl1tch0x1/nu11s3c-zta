@@ -188,24 +188,21 @@ cleanup:
 	if (prof->attachment) {
 		tmp = symtab::delete_var(PROFILE_EXEC_VAR);
 		delete tmp;
-		if (saved_exec_path) {
+		if (saved_exec_path)
 			symtab::add_var(*saved_exec_path);
-			delete saved_exec_path;
-		}
 	}
 cleanup_attach:
 	if (prof->attachment) {
 		tmp = symtab::delete_var(PROFILE_ATTACH_VAR);
 		delete tmp;
-		if (saved_attach_path) {
+		if (saved_attach_path)
 			symtab::add_var(*saved_attach_path);
-			delete saved_attach_path;
-		}
 	}
 cleanup_name:
 	tmp = symtab::delete_var(PROFILE_NAME_VARIABLE);
 	delete tmp;
-
+	delete saved_exec_path;
+	delete saved_attach_path;
 out:
 	return error;
 }
