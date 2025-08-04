@@ -307,6 +307,7 @@ int variable::expand_variable()
 		}
 		name = variable::process_var(var.c_str());
 		variable *ref = symtab::lookup_existing_symbol(name);
+		free(name);
 		if (!ref) {
 			PERROR("Failed to find declaration for: %s\n", var.c_str());
 			rc = 1;
@@ -336,7 +337,6 @@ int variable::expand_variable()
 	}
 
 out:
-	free(name);
 	expanding = false;
 	return rc;
 }
