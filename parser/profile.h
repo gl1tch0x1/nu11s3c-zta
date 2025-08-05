@@ -175,6 +175,12 @@ public:
 		signal = 0;
 		error = 0;
 	}
+
+	void clear(void) {
+		free(disconnected_path);
+		free(disconnected_ipc);
+	}
+
 	void init(const char *str)
 	{
 		init();
@@ -301,7 +307,7 @@ public:
 				}
 				// same ignore rhs.disconnect_path
 			} else {
-				disconnected_path = rhs.disconnected_path;
+				disconnected_path = strdup(rhs.disconnected_path);
 			}
 		}
 		if (rhs.disconnected_ipc) {
@@ -311,7 +317,7 @@ public:
 				}
 				// same so do nothing
 			} else {
-				disconnected_ipc = rhs.disconnected_ipc;
+				disconnected_ipc = strdup(rhs.disconnected_ipc);
 			}
 		}
 		if (rhs.signal) {
