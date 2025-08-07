@@ -78,6 +78,7 @@ void ProfileList::dump_profile_names(bool children)
 Profile::~Profile()
 {
 	hat_table.clear();
+	flags.clear();
 	free_cod_entries(entries);
 	free_cond_entry_list(xattrs);
 
@@ -97,10 +98,6 @@ Profile::~Profile()
 		free(name);
 	if (attachment)
 		free(attachment);
-	if (flags.disconnected_path)
-		free(flags.disconnected_path);
-	if (flags.disconnected_ipc)
-		free(flags.disconnected_ipc);
 	if (ns)
 		free(ns);
 	for (int i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++)

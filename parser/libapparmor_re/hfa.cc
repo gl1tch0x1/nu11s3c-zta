@@ -334,7 +334,16 @@ State *DFA::add_new_state(optflags const &opts, NodeSet *anodes,
 
 	ProtoState proto;
 	proto.init(nnodev, anodev);
-	State *state = new State(opts, node_map.size(), proto, other, filedfa);
+	State *state;
+	try {
+		state = new State(opts, node_map.size(), proto, other, filedfa);
+	} catch(int error) {
+		/* this function is called in the DFA object creation,
+		 * and the exception prevents the destructor from
+		 * being called, so call the helper here */
+		cleanup();
+		throw error;
+	}
 	pair<NodeMap::iterator,bool> x = node_map.insert(proto, state);
 	if (x.second == false) {
 		delete state;
@@ -392,7 +401,17 @@ void DFA::update_state_transitions(optflags const &opts, State *state)
 	 */
 	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
 		State *target;
-		target = add_new_state(opts, j->second, nonmatching);
+		try {
+			target = add_new_state(opts, j->second, nonmatching);
+		} catch (int error) {
+			/* when add_new_state fails, there could still
+			 * be NodeSets in the rest of cases, so clean
+			 * them up before re-throwing the exception */
+			for (Cases::iterator k = ++j; k != cases.end(); k++) {
+				delete k->second;
+			}
+			throw error;
+		}
 
 		/* Don't insert transition that the otherwise transition
 		 * already covers
@@ -522,11 +541,7 @@ DFA::DFA(Node *root, optflags const &opts, bool buildfiledfa): root(root), filed
 
 DFA::~DFA()
 {
-	anodes_cache.clear();
-	nnodes_cache.clear();
-
-	for (Partition::iterator i = states.begin(); i != states.end(); i++)
-		delete *i;
+	cleanup();
 }
 
 State *DFA::match_len(State *state, const char *str, size_t len)

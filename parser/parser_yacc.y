@@ -577,6 +577,7 @@ flags:	opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 flagvals:	flagvals flagval
 	{
 		$1.merge($2);
+		$2.clear();
 		$$ = $1;
 	};
 
