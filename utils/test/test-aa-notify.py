@@ -168,10 +168,11 @@ class AANotifyTest(AANotifyBase):
         expected_return_code = 0
         expected_output_1 = \
 '''usage: aa-notify [-h] [-p] [--display DISPLAY] [-f FILE] [-l] [-s NUM] [-v]
-                 [-u USER] [-w NUM] [-m] [-F] [--prompt-filter PF] [--debug]
-                 [--filter.profile PROFILE] [--filter.operation OPERATION]
-                 [--filter.name NAME] [--filter.denied DENIED]
-                 [--filter.family FAMILY] [--filter.socket SOCKET]
+                 [-u USER] [-w NUM] [-m] [-F] [-L [{yes,no,auto}]]
+                 [--prompt-filter PF] [--debug] [--filter.profile PROFILE]
+                 [--filter.operation OPERATION] [--filter.name NAME]
+                 [--filter.denied DENIED] [--filter.family FAMILY]
+                 [--filter.socket SOCKET]
 
 Display AppArmor notifications or messages for DENIED entries.
 '''  # noqa: E128
@@ -193,6 +194,8 @@ Display AppArmor notifications or messages for DENIED entries.
   -m, --merge-notifications
                         Merge notification for improved readability (with -p)
   -F, --foreground      Do not fork to the background
+  -L, --local [{yes,no,auto}]
+                        Add to local profile
   --prompt-filter PF    kind of operations which display a popup prompt
   --debug               debug mode
 
@@ -231,6 +234,11 @@ Filtering options:
             ), (
                 ', --wait NUM    ',
                 ' NUM, --wait NUM',
+            ), (
+                ' -L, --local [{yes,no,auto}]\n'
+                + '                        Add to local profile',
+                ' -L [{yes,no,auto}], --local [{yes,no,auto}]\n'
+                + '                        Add to local profile'
             )]
             for patch in patches:
                 expected_output_2 = expected_output_2.replace(patch[0], patch[1])
