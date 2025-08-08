@@ -100,12 +100,12 @@ class ProfileRules:
         for raw_rule in raw_rules:
             self.rules.append(SelectableRule(raw_rule, self.selectable))
 
-    def get_writable_rules(self, template_path, allow_all=False):
+    def get_writable_rules(self, template_path, local='yes', allow_all=False):
         out = ''
         for rule in self.rules:
             if allow_all or rule.selected.get():
                 if not self.is_userns_profile:
-                    out += 'add_rule\t{}\t{}\n'.format(rule.rule, self.profile_name)
+                    out += 'add_rule\t{}\t{}\t{}\n'.format(local, rule.rule, self.profile_name)
                 else:
                     out += 'create_userns\t{}\t{}\t{}\t{}\t{}\n'.format(template_path, self.profile_name, self.bin_path, self.profile_path, 'allow')
         return out
