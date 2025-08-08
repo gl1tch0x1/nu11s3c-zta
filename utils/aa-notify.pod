@@ -71,6 +71,14 @@ This has no effect when running under sudo.
 
 wait NUM seconds before displaying notifications (for use with -p)
 
+=item -L, --local [{yes,no,auto}]
+
+add rules to a local profiles instead of the real profiles.
+This simplify profiles' deployment by keeping local modifications self-contained.
+ - B<yes>: always use a local profile
+ - B<no>: never use a local profile
+ - B<auto>: use a local profile if the main profile already relies on a local profile
+
 =item -v, --verbose
 
 show messages with summaries.
@@ -97,6 +105,9 @@ System-wide configuration for B<aa-notify> is done via
 
   # Binaries for which we ignore userns-related capability denials
   ignore_denied_capability="sudo,su"
+
+  # Write change to local profiles if enabled to preserve regular profiles and simplify upgrades
+  use_local_profiles
 
   # OPTIONAL - kind of operations which display a popup prompt.
   prompt_filter="userns"
