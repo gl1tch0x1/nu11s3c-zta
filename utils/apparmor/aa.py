@@ -1703,6 +1703,72 @@ def read_profile(file, is_active_profile, read_error_fatal=False):
             extra_profiles.add_profile(filename, profile, attachment, profile_data[profile])
 
 
+def get_local_include(profile_name):
+    # If a local profile already exists, we use it.
+    for rule in active_profiles[profile_name]['inc_ie'].rules:
+        if rule.path.startswith("local/"):
+            return rule.path
+    return None
+
+
+def create_local_profile_if_needed(profile_name):
+    base_profile = profile_name.split("/", 1)[0]
+    local_include = get_local_include(profile_name)
+
+    # Not found: we add a mention of the local profile in the main profile
+    if not local_include:
+        local_include = "local/" + profile_name.replace('/', '.')
+        active_profiles[profile_name]['inc_ie'].add(IncludeRule(local_include, True, True))
+        write_profile_ui_feedback(base_profile)
+
+    inc_file = profile_dir + '/' + local_include
+
+    # Create the include if needed
+    if not include.get(inc_file, {}).get(inc_file, False):
+        include[inc_file] = dict()
+        include[inc_file][inc_file] = ProfileStorage(inc_file, inc_file, "create_local_profile_if_needed")
+
+    return inc_file
+
+
+def serialize_include(prof_storage, include_metadata=True):
+    lines = []
+    if include_metadata:
+        lines.append('# Last Modified: %s' % time.asctime())
+
+    if prof_storage.get('initial_comment'):
+        lines.append(prof_storage['initial_comment'].rstrip())
+
+    lines.extend(prof_storage.get_rules_clean(0))
+
+    return '\n'.join(lines) + '\n'
+
+
+def write_include_ui_feedback(include_data, incfile, out_dir=None, include_metadata=True):
+    aaui.UI_Info(_('Writing updated include file %s') % incfile)
+    write_include(include_data, incfile, out_dir, include_metadata)
+
+
+def write_include(include_data, incfile, out_dir=None, include_metadata=True):
+    target_file = incfile if incfile.startswith('/') else os.path.join(profile_dir, incfile)
+    if out_dir:
+        target_file = os.path.join(out_dir, os.path.basename(target_file))
+
+    include_string = serialize_include(include_data, include_metadata=include_metadata)
+
+    with NamedTemporaryFile('w', suffix='~', delete=False) as tmp:
+        if os.path.exists(target_file):
+            shutil.copymode(target_file, tmp.name)
+        else:
+            pass  # 0o600 (NamedTemporaryFile default)
+        tmp.write(include_string)
+
+    try:
+        shutil.move(tmp.name, target_file)
+    except PermissionError:
+        aaui.UI_Important(_('WARNING: Can\'t write to %s. Please run this script with elevated privileges') % target_file)
+
+
 def attach_profile_data(profiles, profile_data):
     profile_data = merged_to_split(profile_data)
     # Make deep copy of data to avoid changes to
