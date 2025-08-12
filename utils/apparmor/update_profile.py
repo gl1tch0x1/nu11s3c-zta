@@ -8,7 +8,18 @@ from apparmor import aa
 from apparmor.logparser import ReadLog
 
 from apparmor.translations import init_translation
+
 _ = init_translation()
+
+is_aa_inited = False
+
+
+def init_if_needed():
+    global is_aa_inited
+    if not is_aa_inited:
+        aa.init_aa()
+        aa.read_profiles()
+        is_aa_inited = True
 
 
 def create_userns(template_path, name, bin_path, profile_path, decision):
@@ -27,27 +38,48 @@ def create_userns(template_path, name, bin_path, profile_path, decision):
         exit(_('Cannot reload updated profile'))
 
 
-def add_to_profile(rule, profile_name):
-    aa.init_aa()
-    aa.update_profiles()
-
-    rule_type, rule_class = ReadLog('', '', '').get_rule_type(rule)
-
-    rule_obj = rule_class.create_instance(rule)
-
-    if not aa.active_profiles.profile_exists(profile_name):
-        exit(_('Cannot find {} in profiles').format(profile_name))
-    aa.active_profiles[profile_name][rule_type].add(rule_obj, cleanup=True)
+def add_to_profile(rule_obj, profile_name):
+    aa.active_profiles[profile_name][rule_obj.rule_name].add(rule_obj, cleanup=True)
 
     # Save changes
     aa.write_profile_ui_feedback(profile_name)
+
+
+def add_to_local_profile(rule_obj, profile_name):
+    inc_file = aa.create_local_profile_if_needed(profile_name, cleanup=True)
+
+    aa.include[inc_file][inc_file].data[rule_obj.rule_name].add(rule_obj)
+    aa.write_include_ui_feedback(aa.include[inc_file][inc_file], inc_file)
+
+
+def add_rule(mode, rule, profile_name):
+    init_if_needed()
+
+    if not aa.active_profiles.profile_exists(profile_name):
+        exit(_('Cannot find {} in profiles').format(profile_name))
+
+    rule_type, rule_class = ReadLog('', '', '').get_rule_type(rule)
+    rule_obj = rule_class.create_instance(rule)
+
+    if mode == 'yes':
+        add_to_local_profile(rule_obj, profile_name)
+    elif mode == 'no':
+        add_to_profile(rule_obj, profile_name)
+    elif mode == 'auto':
+        if aa.get_local_include(profile_name):
+            add_to_local_profile(rule_obj, profile_name)
+        else:
+            add_to_profile(rule_obj, profile_name)
+    else:
+        usage(False)
+
     aa.reload_base(profile_name)
 
 
 def usage(is_help):
     print('This tool is a low level tool - do not use it directly')
     print('{} create_userns <template_path> <name> <bin_path> <profile_path> <decision>'.format(sys.argv[0]))
-    print('{} add_rule <rule> <profile_name>'.format(sys.argv[0]))
+    print('{} add_rule <mode=yes|no|auto> <rule> <profile_name>'.format(sys.argv[0]))
     print('{} from_file <file>'.format(sys.argv[0]))
     if is_help:
         exit(0)
@@ -76,9 +108,9 @@ def do_command(command, args):
             usage(False)
         create_userns(args[1], args[2], args[3], args[4], args[5])
     elif command == 'add_rule':
-        if not len(args) == 3:
+        if not len(args) == 4:
             usage(False)
-        add_to_profile(args[1], args[2])
+        add_rule(args[1], args[2], args[3])
     elif command == 'help':
         usage(True)
     else:
