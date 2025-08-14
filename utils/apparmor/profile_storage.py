@@ -199,6 +199,21 @@ class ProfileStorage:
 
         return data
 
+    def get_local_include(self):
+        inc = None
+        preferred_inc = self.data['name']
+        if preferred_inc.startswith('/'):
+            preferred_inc = preferred_inc[1:]
+        preferred_inc = 'local/' + preferred_inc.replace('/', '.')
+
+        # If a local profile already exists, we use it.
+        for rule in self.data['inc_ie'].rules:
+            if rule.path.startswith("local/"):
+                inc = rule.path
+                if rule.path == preferred_inc:  # Prefer includes that matches the profile name.
+                    break
+        return inc
+
     @classmethod
     def parse(cls, line, file, lineno, profile, hat):
         """parse a profile start line (using parse_profile_startline()) and convert it to an instance of this class"""
