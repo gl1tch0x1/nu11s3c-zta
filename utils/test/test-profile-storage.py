@@ -14,6 +14,7 @@ import unittest
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, split_flags, var_transform
 from apparmor.rule.capability import CapabilityRule
+from apparmor.rule.include import IncludeRule
 from common_test import AATest, setup_all_loops
 
 
@@ -311,6 +312,27 @@ class AaTest_var_transform(AATest):
 
     def _run_test(self, params, expected):
         self.assertEqual(var_transform(params), expected)
+
+
+class AaTest_include(AATest):
+    tests = (
+        (('profile foo /foo {', []),                                        None),  # No include
+        (('profile foo /foo {', ['elsewhere/foo']),                         None),  # No include in local/
+        (('profile foo /foo {', ['local/foo']),                             "local/foo"),  # Single include, we pick it
+        (('profile foo /foo {', ['local/bar']),                             "local/bar"),  # Single include, we pick it
+        (('profile x//y /y {',  ['local/x..y', 'local/y']),                 "local/x..y"),  # Pick the include that matches the profile nam
+        (('profile foo /foo {', ['local/bar', 'local/foo', 'local/baz']),   "local/foo"),  # Pick the include that matches the profile name
+        (('/usr/bin/xx {',      ['local/usr.bin.xx', 'local/xx']),          "local/usr.bin.xx"),  # Pick the include that matches the profile name
+        (('profile foo /foo {', ['local/bar', 'local/baz', 'local/qux']),   "local/qux"),  # No match, pick the last one
+    )
+
+    def _run_test(self, params, expected):
+        (profile, hat, prof_storage) = ProfileStorage.parse(params[0], 'somefile', 1, None, None)
+
+        for inc in params[1]:
+            prof_storage.data['inc_ie'].add(IncludeRule(inc, True, True))
+
+        self.assertEqual(prof_storage.get_local_include(), expected)
 
 
 setup_all_loops(__name__)
