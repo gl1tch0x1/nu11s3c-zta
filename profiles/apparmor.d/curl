@@ -27,6 +27,9 @@ profile curl /usr/bin/curl {
   # (see --config, --cacert options)
   file r @{HOME}/**,
 
+  # allow reading data/config from tmp
+  owner file r /tmp/**,
+
   # allow writing output to $HOME, /tmp (see -o option)
   file w @{HOME}/**,
   file w /tmp/**,
