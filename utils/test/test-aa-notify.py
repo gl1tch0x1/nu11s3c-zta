@@ -167,12 +167,12 @@ class AANotifyTest(AANotifyBase):
 
         expected_return_code = 0
         expected_output_1 = \
-'''usage: aa-notify [-h] [-p] [--display DISPLAY] [-f FILE] [-l] [-s NUM] [-v]
-                 [-u USER] [-w NUM] [-m] [-F] [-L [{yes,no,auto}]]
-                 [--prompt-filter PF] [--debug] [--filter.profile PROFILE]
-                 [--filter.operation OPERATION] [--filter.name NAME]
-                 [--filter.denied DENIED] [--filter.family FAMILY]
-                 [--filter.socket SOCKET]
+'''usage: aa-notify [-h] [-p] [--display DISPLAY] [--xauthority XAUTHORITY]
+                 [-f FILE] [-l] [-s NUM] [-v] [-u USER] [-w NUM] [-m] [-F]
+                 [-L [{yes,no,auto}]] [--prompt-filter PF] [--debug]
+                 [--filter.profile PROFILE] [--filter.operation OPERATION]
+                 [--filter.name NAME] [--filter.denied DENIED]
+                 [--filter.family FAMILY] [--filter.socket SOCKET]
 
 Display AppArmor notifications or messages for DENIED entries.
 '''  # noqa: E128
@@ -183,6 +183,9 @@ Display AppArmor notifications or messages for DENIED entries.
   -p, --poll            poll AppArmor logs and display notifications
   --display DISPLAY     set the DISPLAY environment variable (might be needed if
                         sudo resets $DISPLAY)
+  --xauthority XAUTHORITY
+                        set the XAUTHORITY environment variable (might be needed
+                        if sudo resets XAUTHORITY)
   -f, --file FILE       search FILE for AppArmor messages
   -l, --since-last      display stats since last login
   -s, --since-days NUM  show stats for last NUM days (can be used alone or with
