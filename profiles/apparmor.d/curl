@@ -17,22 +17,19 @@ profile curl /usr/bin/curl {
   include <abstractions/private-files-strict>
   include <abstractions/ssl_certs>
 
+  #can read/write data and configs from tmp
+  include <abstractions/user-tmp>
+
   @{exec_path} mr,
 
   # allow reading configuration files from $HOME
-  priority=1 file r @{HOME}/.curlrc,
-  priority=1 file r @{HOME}/.config/curlrc,
+  priority=1 owner file r @{HOME}/.curlrc,
+  priority=1 owner file r @{HOME}/.config/curlrc,
 
   # allow reading other configuration files/certs from $HOME
   # (see --config, --cacert options)
-  file r @{HOME}/**,
-
-  # allow reading data/config from tmp
-  owner file r /tmp/**,
-
   # allow writing output to $HOME, /tmp (see -o option)
-  file w @{HOME}/**,
-  file w /tmp/**,
+  owner file rw @{HOME}/**,
 
   # allows UDP (for DNS), TCP (for http, https, etc), abstract Unix sockets, IPv4, IPv6
   network unix stream,
