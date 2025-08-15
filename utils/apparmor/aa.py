@@ -1703,17 +1703,16 @@ def read_profile(file, is_active_profile, read_error_fatal=False):
             extra_profiles.add_profile(filename, profile, attachment, profile_data[profile])
 
 
-def get_local_include(profile_name):
-    # If a local profile already exists, we use it.
-    for rule in active_profiles[profile_name]['inc_ie'].rules:
-        if rule.path.startswith("local/"):
-            return rule.path
-    return None
-
-
+# TODO: Split profiles' creating and saving.
 def create_local_profile_if_needed(profile_name):
-    base_profile = profile_name.split("/", 1)[0]
-    local_include = get_local_include(profile_name)
+    base_profile = profile_name
+    while True:
+        parent = active_profiles[base_profile].data.get('parent')
+        if parent == '':
+            break
+        base_profile = parent
+
+    local_include = active_profiles[profile_name].get_local_include()
 
     # Not found: we add a mention of the local profile in the main profile
     if not local_include:
@@ -1756,7 +1755,7 @@ def write_include(include_data, incfile, out_dir=None, include_metadata=True):
 
     include_string = serialize_include(include_data, include_metadata=include_metadata)
 
-    with NamedTemporaryFile('w', suffix='~', delete=False) as tmp:
+    with NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir + "/local") as tmp:
         if os.path.exists(target_file):
             shutil.copymode(target_file, tmp.name)
         else:

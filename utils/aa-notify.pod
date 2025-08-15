@@ -106,8 +106,8 @@ System-wide configuration for B<aa-notify> is done via
   # Binaries for which we ignore userns-related capability denials
   ignore_denied_capability="sudo,su"
 
-  # Write change to local profiles if enabled to preserve regular profiles and simplify upgrades
-  use_local_profiles
+  # Write change to local profiles if enabled to preserve regular profiles and simplify upgrades (yes, no, auto)
+  use_local_profiles="yes"
 
   # OPTIONAL - kind of operations which display a popup prompt.
   prompt_filter="userns"

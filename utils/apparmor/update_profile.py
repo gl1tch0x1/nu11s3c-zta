@@ -46,9 +46,9 @@ def add_to_profile(rule_obj, profile_name):
 
 
 def add_to_local_profile(rule_obj, profile_name):
-    inc_file = aa.create_local_profile_if_needed(profile_name, cleanup=True)
+    inc_file = aa.create_local_profile_if_needed(profile_name)
 
-    aa.include[inc_file][inc_file].data[rule_obj.rule_name].add(rule_obj)
+    aa.include[inc_file][inc_file].data[rule_obj.rule_name].add(rule_obj, cleanup=True)
     aa.write_include_ui_feedback(aa.include[inc_file][inc_file], inc_file)
 
 
@@ -66,7 +66,7 @@ def add_rule(mode, rule, profile_name):
     elif mode == 'no':
         add_to_profile(rule_obj, profile_name)
     elif mode == 'auto':
-        if aa.get_local_include(profile_name):
+        if aa.active_profiles[profile_name].get_local_include():
             add_to_local_profile(rule_obj, profile_name)
         else:
             add_to_profile(rule_obj, profile_name)

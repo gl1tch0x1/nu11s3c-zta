@@ -851,7 +851,7 @@ def main():
     parser.add_argument('-w', '--wait', type=int, metavar=('NUM'), help=_('wait NUM seconds before displaying notifications (with -p)'))
     parser.add_argument('-m', '--merge-notifications', action='store_true', help=_('Merge notification for improved readability (with -p)'))
     parser.add_argument('-F', '--foreground', action='store_true', help=_('Do not fork to the background'))
-    parser.add_argument('-L', '--local', nargs='?', const='yes', default='auto', choices=['yes', 'no', 'auto'], help=_('Add to local profile'))
+    parser.add_argument('-L', '--local', nargs='?', const='yes', choices=['yes', 'no', 'auto'], help=_('Add to local profile'))
     parser.add_argument('--prompt-filter', type=str, metavar=('PF'), help=_('kind of operations which display a popup prompt'))
     parser.add_argument('--debug', action='store_true', help=_('debug mode'))
     parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
@@ -1073,15 +1073,19 @@ def main():
         keys_to_aggregate = config['']['keys_to_aggregate'].strip().split(',')
     else:
         keys_to_aggregate = {'operation', 'class', 'name', 'denied', 'target'}
-    if 'use_local_profiles' in config['']:
-        if config['']['use_local_profiles'] in {'auto', 'yes', 'no'}:
-            args.local = config['']['use_local_profiles']
-        elif config['']['use_local_profiles'] is None:
-            args.local = 'yes'
+
+    if not args.local:
+        if 'use_local_profiles' in config['']:
+            if config['']['use_local_profiles'] in {'auto', 'yes', 'no'}:
+                args.local = config['']['use_local_profiles']
+            elif config['']['use_local_profiles'] is None:
+                args.local = 'yes'
+            else:
+                sys.exit(_('ERROR: using an invalid value for use_local_profiles in config {}\nSupported values: {}').format(
+                    config['']['use_local_profiles'], ', '.join({'yes', 'auto', 'no'})
+                ))
         else:
-            sys.exit(_('ERROR: using an invalid value for use_local_profiles in config {}\nSupported values: {}').format(
-                config['']['use_local_profiles'], ', '.join({'yes', 'auto', 'no'})
-            ))
+            args.local = 'auto'
 
     if args.file:
         logfile = args.file

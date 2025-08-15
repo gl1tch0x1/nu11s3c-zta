@@ -158,17 +158,18 @@ class ShowMoreGUIAggregated(GUI):
 
         self.text_display = tk.Text(self.label_frame, wrap='word', height=40, width=100, yscrollcommand=self.scrollbar.set)
 
+        kwargs = {
+            "height": self.text_display.winfo_reqheight() - 4,  # The border are *inside* the canvas but *outside* the textbox. I need to remove 4px (2*the size of the borders) to get the same size
+            "width": self.text_display.winfo_reqwidth() - 4,
+            "borderwidth": self.text_display['borderwidth'],
+            "relief": self.text_display['relief'],
+            "yscrollcommand": self.scrollbar.set,
+        }
+
         if ttkthemes:
             self.text_display.configure(background=self.bg_color, foreground=self.fg_color)
-        self.canvas = tk.Canvas(
-            self.label_frame,
-            background=self.bg_color,
-            height=self.text_display.winfo_reqheight() - 4,  # The border are *inside* the canvas but *outside* the textbox. I need to remove 4px (2*the size of the borders) to get the same size
-            width=self.text_display.winfo_reqwidth() - 4,
-            borderwidth=self.text_display['borderwidth'],
-            relief=self.text_display['relief'],
-            yscrollcommand=self.scrollbar.set
-        )
+            kwargs['background'] = self.bg_color
+        self.canvas = tk.Canvas(self.label_frame, **kwargs)
 
         self.inner_frame = ttk.Frame(self.canvas)
         self.canvas.create_window((2, 2), window=self.inner_frame, anchor='nw')
