@@ -85,6 +85,7 @@ int test_with_old_style_mount() {
         perror("FAIL: could not open executable file in shadowed dir");
         close(shadowed_file_fd);
         close(shadowing_dirfd);
+        close(shadowed_dirfd);
         return 1;
     }
 
@@ -137,6 +138,11 @@ int test_with_old_style_mount() {
 
     DEBUG_PRINTF("Read from disconnected file\n");
     char *file_contents_buf = calloc(shadowed_file_size+1, sizeof(char));
+    if (file_contents_buf == NULL) {
+        perror("FAIL: could not allocate memory to read file");
+        rc |= 1;
+        goto cleanup_mount;
+    }
     if (read(shadowed_file_fd, file_contents_buf, shadowed_file_size) == -1) {
         perror("FAIL: could not read from file after mount");
         rc |= 1;
@@ -164,6 +170,7 @@ int test_with_old_style_mount() {
         rc |= 1;
     }
     cleanup_fds:
+    close(shadowed_exec_fd);
     close(shadowed_file_fd);
     close(shadowing_dirfd);
     close(shadowed_exec_fd);
