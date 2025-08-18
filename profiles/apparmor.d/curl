@@ -42,6 +42,10 @@ profile curl /usr/bin/curl {
   network inet6 stream,
   network inet6 dgram,
 
+  # Allow access to the snap socket until we can revisit it with delegation
+  # or profile refactoring
+  file rw @{run}/snapd.socket,
+
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/curl>
 }
