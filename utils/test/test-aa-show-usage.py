@@ -92,7 +92,16 @@ Filtering options:
             if line.startswith('  Profile '):
                 nb_profile += 1
 
-        command = ['grep', '-Er', r'flags=.*unconfined.*\{', '--', aa.profile_dir]
+        command = ['grep', '-Er', r'flags=.*unconfined.*\{']
+
+        # Remove disabled profiles from grep
+        disable_dir = os.path.join(aa.profile_dir, 'disable')
+        if os.path.isdir(disable_dir):
+            for name in os.listdir(disable_dir):
+                command.append('--exclude=' + name)
+
+        command.extend(['--', aa.profile_dir])
+
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, check=False)
         self.assertEqual(
             len(result.stdout.splitlines()), nb_profile,
