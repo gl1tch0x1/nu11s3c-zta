@@ -57,6 +57,26 @@ int fork_and_execvat(int exec_fd, char* const* argv) {
     }
 }
 
+int set_up_mount_separation() {
+    if (unshare(CLONE_NEWNS) == -1) {
+        perror("FAIL: could not unshare mount namespace");
+        return -1;
+    }
+    /*
+     * Try to remount / as MS_PRIVATE | MS_REC so that our mounts don't
+     * last outside of this particular process. In particular, the open_tree
+     * test's move_mount doesn't persist in 6.14 but persists in 6.15.
+     * This behavior change was brought about by the upstream commit
+     * 21107723831e (fs: mount detached mounts onto detached mounts) and its
+     * semantic change to the behavior of fs/namespace.c:dissolve_on_fput.
+     */
+    if (mount(NULL, "/", NULL, MS_PRIVATE | MS_REC, NULL) == -1) {
+        perror("FAIL: could not make make / mount rprivate");
+        return -1;
+    }
+    return 0;
+}
+
 int test_with_old_style_mount() {
     // Set up directory fds for future reference
     DEBUG_PRINTF("Opening fds for shadowed and shadowing directories\n");
@@ -100,8 +120,7 @@ int test_with_old_style_mount() {
 
     DEBUG_PRINTF("Unshare mount ns and bind mount over shadowed dir\n");
     // Call unshare() to step into a new mount namespace
-    if (unshare(CLONE_NEWNS) == -1) {
-        perror("FAIL: could not unshare mount namespace");
+    if (set_up_mount_separation() == -1) {
         rc |= 1;
         goto cleanup_fds;
     }
@@ -185,8 +204,7 @@ int test_with_old_style_mount() {
 int test_with_open_tree_mount() {
     DEBUG_PRINTF("Unshare mount ns\n");
     // Call unshare() to step into a new mount namespace
-    if (unshare(CLONE_NEWNS) == -1) {
-        perror("FAIL: could not unshare mount namespace");
+    if (set_up_mount_separation() == -1) {
         return 1;
     }
     DEBUG_PRINTF("bind mount shadowed using new mount API\n");
@@ -275,8 +293,7 @@ int test_with_open_tree_mount() {
 int test_with_fsmount(const char *source) {
     DEBUG_PRINTF("Unshare mount ns\n");
     // Call unshare() to step into a new mount namespace
-    if (unshare(CLONE_NEWNS) == -1) {
-        perror("FAIL: could not unshare mount namespace");
+    if (set_up_mount_separation() == -1) {
         return 1;
     }
 
