@@ -192,11 +192,11 @@ static int add_named_transition(Profile *prof, struct cod_entry *entry)
 			/* specified as cix so profile name is implicit */
 			name = (char *) malloc(strlen(prof->name) + strlen(entry->nt_name)
 				      + 3);
-			if (!name) {
-				PERROR("Memory allocation error\n");
-				exit(1);
-			}
-			sprintf(name, "%s//%s", prof->name, entry->nt_name);
+					if (!name) {
+			PERROR("Memory allocation error\n");
+			exit(1);
+		}
+		snprintf(name, strlen(prof->name) + strlen(entry->nt_name) + 3, "%s//%s", prof->name, entry->nt_name);
 			free(entry->nt_name);
 			entry->nt_name = NULL;
 		} else {

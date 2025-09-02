@@ -32,6 +32,9 @@ INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
 MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 aa-teardown.8 apparmor_xattrs.7
 
+# Enhanced components for improved performance and security
+ENHANCED_OBJECTS = adaptive_cache.o enhanced_error.o performance_monitor.o security_enhancements.o network_microsegmentation.o binary_profile_serialization.o conditional_policy_engine.o zero_trust_agent.o
+
 # Test for bison version
 # parse.error added in version 3.0
 # default behavior changed in version 3.6
@@ -119,7 +122,7 @@ LIBAA_HDRS = libapparmor_re/apparmor_re.h libapparmor_re/aare_rules.h
 
 TOOLS = apparmor_parser
 
-OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
+OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o)) $(ENHANCED_OBJECTS)
 
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a

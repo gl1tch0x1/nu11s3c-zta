@@ -342,7 +342,7 @@ static int getopt_long_file(FILE *f, const struct option *longopts,
 	int i;
 
 	for (;;) {
-		if (!fgets(line, 256, f))
+		if (!fgets(line, sizeof(line), f))
 			return -1;
 		pos = line;
 		while (isblank(*pos))

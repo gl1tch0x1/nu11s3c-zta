@@ -17,6 +17,43 @@ ownership. The protections provided are in addition to the kernel's
 regular access control mechanisms (including DAC) and can be used to
 restrict the superuser.
 
+-------------------------------
+Automated Threat Detection System
+-------------------------------
+
+AppArmor now includes an advanced Automated Threat Detection System located in `utils/threat-detection/threat_detector.py`. This Python-based tool leverages machine learning algorithms to identify security threats and anomalies in real-time, supporting AppArmor's Zero Trust Architecture.
+
+Key features:
+- Real-time threat and anomaly detection using ML models (Isolation Forest, Random Forest, DBSCAN)
+- Rule-based and behavioral analysis
+- Threat event logging and mitigation actions
+- Extensible threat models for malware, privilege escalation, data exfiltration, and lateral movement
+
+Dependencies:
+- Python >= 3.3
+- numpy
+- pandas
+- scikit-learn
+- joblib
+- pyyaml
+
+To install dependencies in the AppArmor virtual environment:
+```sh
+c:/Users/Acer/Desktop/apparmor-test/apparmor/.venv/Scripts/python.exe -m pip install numpy pandas scikit-learn joblib pyyaml
+```
+
+Usage:
+```sh
+c:/Users/Acer/Desktop/apparmor-test/apparmor/.venv/Scripts/python.exe utils/threat-detection/threat_detector.py --start
+```
+Other options:
+- `--config <path>`: Specify a custom configuration file
+- `--stats`: Show threat statistics
+- `--events <N>`: Show threat events from last N hours
+- `--train <datafile>`: Train models with historical data
+
+See the script for more details and command-line options.
+
 The AppArmor kernel module and accompanying user-space tools are
 available under the GPL license (the exception is the libapparmor
 library, available under the LGPL license, which allows change_hat(2)

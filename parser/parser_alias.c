@@ -101,7 +101,7 @@ static char *do_alias(struct alias_rule *alias, const char *target)
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		return NULL;
 	}
-	sprintf(n, "%s%s", alias->to, target + strlen(alias->from));
+	snprintf(n, strlen(alias->to) + strlen(target + strlen(alias->from)) + 1, "%s%s", alias->to, target + strlen(alias->from));
 /*fprintf(stderr, "replaced alias: from: %s, to: %s, name: %s\n  %s\n", alias->from, alias->to, target, new);*/
 	return n;
 }

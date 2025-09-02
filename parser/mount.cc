@@ -720,7 +720,8 @@ static bool build_mnt_flags(char *buffer, int size, unsigned int flags,
 		if (size < 9)
 			return false;
 
-		strcpy(p, "(\\xfe|)");
+		strncpy(p, "(\\xfe|)", size - 1);
+		p[size - 1] = '\0';
 	}
 
 	return true;
@@ -766,7 +767,7 @@ int mnt_rule::gen_policy_remount(Profile &prof, int &count,
 	char class_mount_hdr[64];
 	const char *vec[5];
 
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+	snprintf(class_mount_hdr, sizeof(class_mount_hdr), "\\x%02x", AA_CLASS_MOUNT);
 
 	/* remount can't be conditional on device and type */
 	/* rule class single byte header */
@@ -841,7 +842,7 @@ int mnt_rule::gen_policy_bind_mount(Profile &prof, int &count,
 	char class_mount_hdr[64];
 	const char *vec[5];
 
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+	snprintf(class_mount_hdr, sizeof(class_mount_hdr), "\\x%02x", AA_CLASS_MOUNT);
 
 	/* bind mount rules can't be conditional on dev_type or data */
 	/* rule class single byte header */
@@ -889,7 +890,7 @@ int mnt_rule::gen_policy_change_mount_type(Profile &prof, int &count,
 	const char *vec[5];
 	char *mountpoint = mnt_point;
 
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+	snprintf(class_mount_hdr, sizeof(class_mount_hdr), "\\x%02x", AA_CLASS_MOUNT);
 
 	/* change type base rules can specify the mount point by using
 	 * the parser token position reserved to device. that's why if
@@ -945,7 +946,7 @@ int mnt_rule::gen_policy_move_mount(Profile &prof, int &count,
 	char class_mount_hdr[64];
 	const char *vec[5];
 
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+	snprintf(class_mount_hdr, sizeof(class_mount_hdr), "\\x%02x", AA_CLASS_MOUNT);
 
 	/* mount move rules can not be conditional on dev_type,
 	 * or data
@@ -993,7 +994,7 @@ int mnt_rule::gen_policy_new_mount(Profile &prof, int &count,
 	char class_mount_hdr[64];
 	const char *vec[5];
 
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+	snprintf(class_mount_hdr, sizeof(class_mount_hdr), "\\x%02x", AA_CLASS_MOUNT);
 
 	/* rule class single byte header */
 	mntbuf.assign(class_mount_hdr);
@@ -1113,7 +1114,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 		return RULE_NOT_SUPPORTED;
 	}
 
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+	snprintf(class_mount_hdr, sizeof(class_mount_hdr), "\\x%02x", AA_CLASS_MOUNT);
 
 	/* a single mount rule may result in multiple matching rules being
 	 * created in the backend to cover all the possible choices
