@@ -1,0 +1,190 @@
+AppArmor Zero Trust Architecture - System Documentation
+======================================================
+
+Overview
+--------
+AppArmor is a Mandatory Access Control (MAC) system for Linux, providing process confinement and security enforcement. The project now includes an advanced Automated Threat Detection System, supporting Zero Trust principles and real-time security monitoring.
+
+Major Updates
+-------------
+- Integration of Automated Threat Detection System (Python-based, ML-powered)
+- Enhanced threat models for malware, privilege escalation, data exfiltration, and lateral movement
+- Real-time event logging, mitigation, and behavioral analysis
+- Modular codebase with kernel patches, user-space tools, libraries, and utilities
+
+Features
+--------
+1. **Automated Threat Detection System**
+   - Location: `utils/threat-detection/threat_detector.py`
+   - Machine learning models: Isolation Forest, Random Forest, DBSCAN
+   - Rule-based and behavioral analysis
+   - Threat event generation, logging, and mitigation
+   - Extensible threat models (malware, privilege escalation, data exfiltration, lateral movement)
+   - Configurable via YAML file
+
+2. **Modular Source Layout**
+   - `binutils/`: Compiled utilities
+   - `changehat/`: Apache, PAM, Tomcat integration
+   - `common/`: Shared makefile rules
+   - `kernel-patches/`: Kernel compatibility patches
+   - `libraries/`: libapparmor and language bindings
+   - `parser/`: Policy parser and loader
+   - `profiles/`: Reference profiles and abstractions
+   - `tests/`: Regression and stress tests
+   - `utils/`: High-level utilities, including threat detection
+
+Detailed Module Overview
+-----------------------
+- **binutils/**: C utilities for AppArmor management (aa_enabled.c, aa_exec.c, aa_load.c, aa_status.c, cJSON.c/h). These provide command-line tools for enabling, executing, loading, and checking AppArmor status, and handle JSON parsing for configuration and output.
+- **changehat/**: Integration modules for Apache (mod_apparmor/), PAM (pam_apparmor/), and Tomcat (tomcat_apparmor/). These allow dynamic profile changes for services, enhancing security boundaries.
+- **common/**: Shared scripts and makefile rules (Make-po.rules, Make.rules, Version). Ensures consistent build and configuration across all modules.
+- **kernel-patches/**: Compatibility patches for various Linux kernel versions (2.x, 3.x, 4.x, v4.x). These patches are required for full AppArmor functionality on different kernels.
+- **libraries/**: Core libapparmor library and bindings (libapparmor/). Provides APIs for interacting with AppArmor from C, Python, and other languages, supporting profile management and enforcement.
+- **parser/**: Policy parser and loader (apparmor_parser.pod, parser_main.c, binary_profile_serialization.c, adaptive_cache.c/h, af_rule.cc/h, cond_expr.cc/h, etc.). Handles parsing, validation, and serialization of AppArmor profiles and rules.
+- **profiles/**: Reference profiles and abstractions for AppArmor (apparmor/, apparmor.d/). Defines security policies for applications and system components.
+- **tests/**: Regression, stress, and unit tests (bin/, profiles/, regression/, snapd/, stress/, unit/). Validates AppArmor’s robustness and correctness across scenarios.
+- **utils/**: High-level utilities (aa-* tools, logprof.conf, notify.conf, python-tools-setup.py, severity.db, etc.). Includes tools for auditing, profiling, notification, sandboxing, and more.
+- **utils/threat-detection/**: Main threat detection Python script (threat_detector.py). Implements ML-based, rule-based, and behavioral threat detection, event generation, and mitigation.
+
+System Workflow Diagram
+----------------------
+
+System Workflow (Textual Diagram):
+
+```
++-------------------+
+|  Security Events  |
++-------------------+
+          |
+          v
++-----------------------------+
+|  Indicator Collection Layer |
++-----------------------------+
+          |
+          v
++-----------------------------+
+| Threat Detection System     |
+|  - ML Models (Anomaly,      |
+|    Behavior, Clustering)    |
+|  - Rule-based Analysis      |
+|  - Behavioral Analysis      |
++-----------------------------+
+          |
+          v
++-----------------------------+
+| Threat Event Generation     |
+|  - Event Logging            |
+|  - Mitigation Actions       |
++-----------------------------+
+          |
+          v
++-----------------------------+
+| System Monitoring & Alerts  |
+|  - Logging                  |
+|  - Alerting/Blocking        |
+|  - Investigation            |
++-----------------------------+
+          |
+          v
++-----------------------------+
+| User/Administrator Review   |
++-----------------------------+
+```
+
+Mermaid.js Workflow Diagram
+--------------------------
+
+```mermaid
+flowchart TD
+    A[Security Events] --> B[Indicator Collection Layer]
+    B --> C[Threat Detection System]
+    C --> D[Threat Event Generation]
+    D --> E[System Monitoring & Alerts]
+    E --> F[User/Administrator Review]
+    
+    subgraph Threat Detection System
+        C1[ML Models: Isolation Forest, Random Forest, DBSCAN]
+        C2[Rule-based Analysis]
+        C3[Behavioral Analysis]
+        C --> C1
+        C --> C2
+        C --> C3
+    end
+    subgraph System Monitoring & Alerts
+        E1[Logging]
+        E2[Alerting/Blocking]
+        E3[Investigation]
+        E --> E1
+        E --> E2
+        E --> E3
+    end
+```
+
+Implementation Details
+----------------------
+- Threat detection uses ML models for anomaly and behavior classification
+- Rule-based detection for known threat patterns
+- Behavioral analysis for unusual activity
+- Threat events include timestamp, type, severity, confidence, source, target, description, indicators, mitigation, and status
+- Mitigation actions: block, alert, investigate, monitor
+- Integration with system logging and monitoring tools
+
+Configuration
+-------------
+- Main configuration via YAML file (see `threat_detector.py`)
+- Customizable detection thresholds, enabled models, monitoring intervals
+- Example config snippet:
+  ```yaml
+  detection:
+    enable_ml_detection: true
+    confidence_threshold: 0.8
+    severity_threshold: 0.7
+  models:
+    anomaly_detector: isolation_forest
+    behavior_classifier: random_forest
+    clustering: dbscan
+  monitoring:
+    check_interval: 60
+    max_events: 10000
+    retention_days: 30
+  ```
+
+Dependencies
+------------
+- Python >= 3.3
+- numpy
+- pandas
+- scikit-learn
+- joblib
+- pyyaml
+
+Install dependencies:
+```sh
+c:/Users/Acer/Desktop/apparmor-test/apparmor/.venv/Scripts/python.exe -m pip install numpy pandas scikit-learn joblib pyyaml
+```
+
+Usage
+-----
+Run threat detection:
+```sh
+c:/Users/Acer/Desktop/apparmor-test/apparmor/.venv/Scripts/python.exe utils/threat-detection/threat_detector.py --start
+```
+Other options:
+- `--config <path>`: Specify custom config file
+- `--stats`: Show threat statistics
+- `--events <N>`: Show threat events from last N hours
+- `--train <datafile>`: Train models with historical data
+
+Testing & Validation
+--------------------
+- Regression and stress tests in `tests/`
+- Spread tool for VM-based testing
+- Parser, libapparmor, and profile checks
+
+Contact & Support
+-----------------
+- Mailing list: https://lists.ubuntu.com/mailman/listinfo/apparmor
+- Bug reports: https://gitlab.com/apparmor/apparmor/-/issues
+- Security issues: security@apparmor.net
+
+For more details, see README.md and source documentation in each module.
